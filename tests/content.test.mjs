@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
-import { getSettings, getPosts, validatePost, validateSettings, selectPublishedPosts, renderMarkdown } from '../src/lib/content.mjs';
+import { getSettings, getPosts, getMembers, validatePost, validateSettings, selectPublishedPosts, renderMarkdown } from '../src/lib/content.mjs';
 import { withBase } from '../src/lib/paths.mjs';
 const post = { title:'測試文章',slug:'test-post',category:'公告',summary:'摘要',body:'## 測試\n\n本文',date:'2026-01-01',published:true,pinned:false };
 
@@ -57,4 +57,19 @@ test('draft contents do not ship in the published HTML', () => {
   const all=readdirSync('src/content/posts').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('src/content/posts',f),'utf8')));
   const drafts=all.filter(p=>!p.published);
   for(const file of htmlFiles('dist')) for(const draft of drafts) assert.ok(!readFileSync(file,'utf8').includes(draft.title));
+});
+
+test('retired site images are replaced with placeholders while article context remains', () => {
+  assert.ok(!existsSync('public/images/original'));
+  assert.ok(!existsSync('public/images/joining.jpg'));
+  assert.ok(!existsSync('migration'));
+  const html=renderMarkdown('<img src="/images/placeholder.svg" alt="教學截圖（圖片待補）">');
+  assert.match(html,/src="\/snmg-213\/images\/placeholder.svg"/);
+  assert.match(html,/教學截圖（圖片待補）/);
+  for(const file of htmlFiles('dist')) {
+    const html=readFileSync(file,'utf8');
+    assert.doesNotMatch(html,/\/images\/(?:original\/|joining\.jpg)/);
+    assert.doesNotMatch(html,/<img\b[^>]*snmg\.ce\.ncu\.edu\.tw/);
+  }
+  for(const person of getMembers().filter(person=>!person.image))assert.match(readFileSync(`dist/members/${person.slug}/index.html`,'utf8'),/placeholder\.svg/);
 });

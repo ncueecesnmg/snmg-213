@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { getMembers, renderMarkdown, getPosts } from '../../lib/content.mjs';
 import { withBase } from '../../lib/paths.mjs';
-import aliases from '../../../migration/aliases.json';
+import aliases from '../../content/member-aliases.json';
 export function getStaticPaths() {
   const members=getMembers();
   return [...members.map(person=>({params:{slug:person.slug},props:{person}})),...Object.entries(aliases).filter(([path,target])=>path.startsWith('/members/')&&members.some(person=>`/members/${person.slug}/`===target)).map(([path,target])=>({params:{slug:path.split('/')[2]},props:{person:members.find(person=>`/members/${person.slug}/`===target)}}))];
@@ -10,4 +10,4 @@ export function getStaticPaths() {
 const {person}=Astro.props;
 const authored=getPosts().filter(post=>post.author===`/members/${person.slug}/`);
 ---
-<Layout title={person.name}><header class="page-intro wrap"><a class="back-link" href={withBase('/members/')}>← 團隊成員</a><h1>{person.name}</h1><p>{person.attributes||'工程二館網路機房'}</p></header><article class="page-content wrap profile-layout"><aside class="profile-aside">{person.image&&<img class="profile-image" src={withBase(person.image)} alt={`${person.name}於原站使用的頭像`} width="320" height="320" />}<nav aria-label="個人公開連結">{person.links.map((link:string)=><a href={link} target="_blank" rel="noopener noreferrer">{link.startsWith('mailto:')?'聯絡信箱':new URL(link).hostname.replace(/^www\./,'')} ↗</a>)}</nav></aside><div><div class="prose" set:html={renderMarkdown(person.body||'<p>此位成員在原站尚未提供進一步介紹。</p>')}></div>{authored.length>0&&<section class="profile-posts"><h2>發表的內容</h2>{authored.map(post=><a class="text-link" href={withBase(`/announcements/${post.slug}/`)}>{post.title} ↗</a>)}</section>}<a class="text-link" href={withBase('/members/')}>查看所有成員</a></div></article></Layout>
+<Layout title={person.name}><header class="page-intro wrap"><a class="back-link" href={withBase('/members/')}>← 團隊成員</a><h1>{person.name}</h1><p>{person.attributes||'工程二館網路機房'}</p></header><article class="page-content wrap profile-layout"><aside class="profile-aside"><img class="profile-image" src={withBase(person.image || "/images/placeholder.svg")} alt={person.image ? `${person.name}的照片` : `${person.name}的照片待補`} width="320" height="320" /><nav aria-label="個人公開連結">{person.links.map((link:string)=><a href={link} target="_blank" rel="noopener noreferrer">{link.startsWith('mailto:')?'聯絡信箱':new URL(link).hostname.replace(/^www\./,'')} ↗</a>)}</nav></aside><div><div class="prose" set:html={renderMarkdown(person.body||'<p>此位成員在原站尚未提供進一步介紹。</p>')}></div>{authored.length>0&&<section class="profile-posts"><h2>發表的內容</h2>{authored.map(post=><a class="text-link" href={withBase(`/announcements/${post.slug}/`)}>{post.title} ↗</a>)}</section>}<a class="text-link" href={withBase('/members/')}>查看所有成員</a></div></article></Layout>

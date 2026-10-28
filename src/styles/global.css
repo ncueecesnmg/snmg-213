@@ -227,7 +227,6 @@ p{text-wrap:pretty}
 .prose iframe{max-width:100%}
 .legacy-prose{max-width:900px}
 .legacy-prose button{padding:10px 18px;margin:5px;border:1px solid var(--black);background:none}
-.photo-credit{font-size:13px;color:var(--muted);margin-top:8px}
 .contact-box{border-top:1px solid var(--black);padding-top:22px;align-self:start;position:sticky;top:calc(var(--header) + 24px);color:var(--muted);font-size:15px}
 .contact-box h2{font-size:22px;margin-bottom:14px;color:var(--black)}
 .contact-box p{margin-bottom:14px}

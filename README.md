@@ -22,12 +22,12 @@
 ## 內容與發布
 
 - `src/content/posts/*.json`：完整公告／文章，每篇獨立檔案；日期為原始發布日期。
-- `src/content/members/*.json`：19 位原站成員資料、頭像與公開連結。
+- `src/content/members/*.json`：19 位成員資料與公開連結；`image` 可填入之後上傳的正式照片路徑。
 - `src/content/site/settings.json`：首頁介紹、聯絡資料與原站服務表單網址。
 - `src/content/site/schedule.json`：原站值班表與更新日期。
 - `src/content/legacy/*.json`：其他內容頁。
-- `public/images/original/`、`public/images/uploads/`：原站與上傳圖片。
-- `migration/routes.json`：原站 sitemap 的 46 個網址清單；`assets.json` 記錄 56 個圖檔來源；`aliases.json` 保留原站已改名的成員連結。
+- `public/images/`：LOGO、分享圖與 `placeholder.svg` 待補圖片；`public/images/uploads/` 存放後台上傳圖片。
+- `src/content/member-aliases.json`：保留已改名的成員網址，供既有文章與值班表使用。
 
 `published: false` 與未來日期的文章不輸出到前台。**Repo 是公開的，草稿原始內容與 Git 歷史仍公開，不能用來保存機密。** main push 會重建；排程每日台灣時間約 00:05 重建，GitHub 排程可能延遲或因長期無活動停用。需要時可手動執行 Actions。
 
@@ -57,14 +57,14 @@ npm run worker:deploy
 
 `SESSION_KEY` 需要 32 bytes 的隨機 base64url 值，以 `wrangler secret put SESSION_KEY` 設定。首次部署的金鑰已設定，不要重新產生，除非你要撤銷所有既有 session。本機 `.dev.vars` 已列入 gitignore，裡面只放開發用加密金鑰。不要提交金鑰或 token。設定 Cloudflare Secret 時，值必須是 43 字元的 base64url 字串，不能包含 `.dev.vars` 的包覆引號；讀取 `.dev.vars` 時應使用 dotenv 解析（例如 Node.js `util.parseEnv`），不能用逐行擷取代替。帳號、repo、前台網址與登入限流綁定均在 `wrangler.jsonc`。後台程式更新目前用 Wrangler 手動部署，前台內容 commit 則走 GitHub Actions。
 
-測試涵蓋內容驗證、發布排序、完整原站路徑、所有內部連結、XSS 清理、登入加密、到期、跨站請求、限流、路徑限制、SHA 衝突與圖片類型。部署前先 build 再 test。
+測試涵蓋內容驗證、發布排序、內容頁與成員舊網址對應、所有內部連結、XSS 清理、登入加密、到期、跨站請求、限流、路徑限制、SHA 衝突與圖片類型。部署前先 build 再 test。
 
-原站重匯入工具 `scripts/migrate-original.mjs` 會覆寫原站內容與圖片清單，僅供遷移，不應在日常編輯後執行。接著執行 `scripts/finalize-migration.mjs` 以修正作者與舊連結。
+遷移已完成，匯入工具與 `migration/` 資料夾已移除。網站建置與日常維護直接使用 `src/content/`。
 
 ## 原站與驗證範圍
 
 原站 46 個 sitemap 網址均已在本次版本產生對應頁面；含完整 7 篇文章、19 位成員、值班表、分類／標籤、元件示例與原本空白的隱私權頁。原本的 Google 表單、Drive 文件維持既有外部入口，未搬動其權限或內容。隱私權頁原站沒有條文，未替學校編造政策。
 
-原站頭像與教學圖片的來源列於 `migration/assets.json`；`joining.jpg` 是原站機櫃示意照片，非經確認的 213 室實拍。正式使用前應確認圖片授權。新識別與交換器為 HTML/CSS/SVG 繪製。
+舊站頭像、機櫃照片及教學截圖已移除，保留圖片位置與教學圖片說明。補圖時，成員照片可由後台填入頭像路徑；文章中的 `/images/placeholder.svg` 替換為上傳圖片路徑；關於機房與招募頁的照片位置在各自的 Astro 頁面。LOGO 使用提供的 PNG，favicon 使用中央大學校徽。
 
 桌面、平板與手機瀏覽器已檢查；未以實體手機、螢幕閱讀器或真實師生進行任務測試，也未宣稱取得 Awwwards / Webby / FWA 認證。視覺與動態決策見 `DESIGN.md`。
