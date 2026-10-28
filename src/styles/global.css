@@ -624,15 +624,7 @@ p {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--fg);
 }
-.section-heading small {
-  display: block;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--muted);
-  letter-spacing: 0;
-  margin-bottom: 4px;
-}
+
 
 /* Home: services */
 .service-grid {
@@ -654,7 +646,7 @@ p {
   height: 100%;
   padding: 24px;
   background: var(--surface);
-  transition: color 0.45s ease;
+  transition: color 180ms ease-out;
 }
 .service-card::before {
   content: "";
@@ -664,7 +656,7 @@ p {
   background: var(--black);
   transform: scaleY(0);
   transform-origin: bottom;
-  transition: transform 0.55s var(--ease);
+  transition: transform 180ms ease-out;
 }
 .service-top {
   display: flex;
@@ -682,16 +674,10 @@ p {
   width: 22px;
   height: 22px;
 }
-.service-port {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--muted);
-  transition: color 0.45s ease;
-}
 .service-card p {
   font-size: 14px;
   color: var(--muted);
-  transition: color 0.45s ease;
+  transition: color 180ms ease-out;
 }
 .service-card .more {
   margin-top: auto;
@@ -1854,10 +1840,8 @@ p {
   }
   .service-card:hover::before {
     transform: scaleY(1);
-    transform-origin: top;
   }
-  .service-card:hover p,
-  .service-card:hover .service-port {
+  .service-card:hover p {
     color: #a5a5a0;
   }
   .service-card:hover .more i,

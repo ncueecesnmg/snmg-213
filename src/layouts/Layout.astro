@@ -47,7 +47,7 @@ const ticker = ['E1-213', '網路維運', 'SNMG', 'DNS 管理', '系所郵件', 
           <a href={withBase("/")} class="brand" aria-label="工程二館網路機房首頁"><Mark /></a>
           <p>國立中央大學 工程二館 E1-213 室<br />{settings.officeHours}<br />{settings.phone}<br /><a href={`mailto:${settings.email}`}>{settings.email}</a></p>
         </div>
-        <nav aria-label="服務"><h2>服務</h2><a href={withBase("/forms/#network")}>網路異常回報</a><a href={withBase("/forms/#dns")}>DNS 網域申請</a><a href={withBase("/forms/#mail")}>郵件服務協助</a><a href={withBase("/forms/#hosting")}>網頁代管</a></nav>
+        <nav aria-label="服務"><h2>服務</h2><a href={withBase("/forms/#network")}>網路異常回報</a><a href={settings.dnsForm}>DNS 網域管理</a><a href={withBase("/forms/#mail")}>郵件服務協助</a><a href={withBase("/forms/#hosting")}>網頁代管</a><a href={withBase("/forms/#shortlink")}>短網址</a></nav>
         <nav aria-label="資訊"><h2>資訊</h2   ><a href={withBase("/announcements/")}>最新公告</a><a href={withBase("/tutorials/")}>教學文章</a><a href={withBase("/documents/")}>文件下載</a><a href={withBase("/sched/")}>值班表</a><a href={withBase("/about/")}>關於機房</a><a href={withBase("/joinus/")}>培訓與招募</a></nav>
         <nav aria-label="相關連結"><h2>相關連結</h2><a href="https://www.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">國立中央大學 ↗</a><a href="https://www.cc.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">中央大學電算中心 ↗</a><a href="https://www2.ee.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">電機工程學系 ↗</a><a href="https://www.ce.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">通訊工程學系 ↗</a><a href="https://maps.app.goo.gl/yUiPDJRYHmtqZB7z8" target="_blank" rel="noopener noreferrer">機房位置地圖 ↗</a></nav>
       </div>

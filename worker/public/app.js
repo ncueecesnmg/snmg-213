@@ -60,7 +60,7 @@ function renderEditor() {
   } else if(collection==='legacy') {
     field('title','頁面標題','text',required);field('path','頁面路徑，例如 /example/','text',{...required,readOnly:!!current.sha});field('body','頁面內容（Markdown / HTML）','textarea');
   } else if(current.filename==='settings.json') {
-    for(const [name,label] of Object.entries({heroTitle:'首頁大標題（兩行，每行六字以內）',heroDescription:'首頁介紹',aboutText:'關於機房',recruitmentText:'培訓介紹',email:'聯絡信箱',phone:'電話／分機',officeHours:'辦公時間',networkForm:'網路回報表單',dnsForm:'DNS 申請表單',mailForm:'郵件回報表單'}))field(name,label,['heroTitle','heroDescription','aboutText','recruitmentText'].includes(name)?'textarea':name==='email'?'email':name.endsWith('Form')?'url':'text',required);
+    for(const [name,label] of Object.entries({heroTitle:'首頁大標題（兩行，每行六字以內）',heroDescription:'首頁介紹',aboutText:'關於機房',recruitmentText:'培訓介紹',email:'聯絡信箱',phone:'電話／分機',officeHours:'辦公時間',networkForm:'網路回報表單',dnsForm:'DNS 管理系統網址',mailForm:'郵件回報表單'}))field(name,label,['heroTitle','heroDescription','aboutText','recruitmentText'].includes(name)?'textarea':name==='email'?'email':name.endsWith('Form')?'url':'text',required);
   } else {
     field('updated','值班表更新日期','date',required);
     const table=document.createElement('table');table.className='schedule-editor';const head=table.createTHead().insertRow();for(const label of ['時間','週一','週二','週三','週四','週五']){const th=document.createElement('th');th.textContent=label;head.append(th);}

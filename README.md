@@ -88,7 +88,7 @@ Token 只存於 Worker Secret，不會傳到瀏覽器。所有編輯者共用這
 
 舊站圖片已移除，保留待補位置。補圖時可更新成員的 `image`、文章中的 `/images/placeholder.svg`，或關於機房與招募頁的圖片路徑。成員舊網址對應請保留，避免既有文章與值班表連結失效。
 
-原站 Google 表單與 Drive 文件維持原連結；學校正式網域與 DNS 尚未切換。舊 Fearnot 後台網址會轉到新後台，舊 API 已停用。
+網路與郵件回報沿用原站 Google 表單，Drive 文件維持原連結；DNS 管理、清查與申請改用 [DNS 管理系統](https://dnsmgr.ce.ncu.edu.tw)；學校正式網域與 DNS 尚未切換。舊 Fearnot 後台網址會轉到新後台，舊 API 已停用。
 
 ## 授權
 
