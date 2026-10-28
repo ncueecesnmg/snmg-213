@@ -27,19 +27,17 @@ const links = [
   <section class="hero">
     <div class="wrap hero-inner">
       <div>
-        <p class="hero-eyebrow">NCU EE/CE · SNMG · E1-213</p>
+        <p class="hero-eyebrow">NCUEECESNMG E1-213</p>
         <h1>國立中央大學<br />工程二館網路機房</h1>
         <p>負責電機系與通訊系的網路維運、DNS 網域、系所郵件與網頁代管，並與電算中心協同維護系館資安。</p>
         <div class="hero-actions"><a class="button" href={withBase('/forms/')}>服務申請與回報</a><a class="button ghost" href={withBase('/announcements/')}>最新公告</a></div>
       </div>
-      <aside class="status-card" aria-label="機房資訊">
-        <h2>STATUS / E1-213</h2>
+      <aside class="info-card" aria-label="機房資訊">
+        <h2>INFO / E1-213</h2>
         <dl>
-          <div><dt>目前狀態</dt><dd><span data-office>辦公時間</span></dd></div>
-          <div><dt>台北時間</dt><dd data-clock>--:--</dd></div>
-          <div><dt>辦公時間</dt><dd>{s.officeHours}</dd></div>
+          <div><dt>電子郵件</dt><dd>{s.email}</dd></div>
           <div><dt>地點</dt><dd>工程二館 E1-213</dd></div>
-          <div><dt>電話</dt><dd>{s.phone}</dd></div>
+          <div><dt>分機</dt><dd>{s.phone}</dd></div>
         </dl>
       </aside>
     </div>

@@ -4,14 +4,14 @@ import '../styles/global.css';
 import Mark from '../components/Mark.astro';
 import { getSettings } from '../lib/content.mjs';
 interface Props { title?: string; description?: string; }
-const { title, description = '國立中央大學工程二館網路機房。網路維運、DNS 申請、系所郵件、網頁代管與網管培訓。' } = Astro.props;
+const { title, description = '位於國立中央大學工程二館 213 室，我們團隊致力維護工二館及部分工五館的網路服務，為通訊系及電機系提供網路支援。' } = Astro.props;
 const settings = getSettings();
 const path = Astro.url.pathname;
 const navigation = [{ href: '/forms/', label: '服務申請' }, { href: '/announcements/', label: '最新公告' }, { href: '/documents/', label: '文件教學' }, { href: '/sched/', label: '值班表' }, { href: '/members/', label: '團隊成員' }];
 const resources = [{ href: '/about/', label: '關於機房' }, { href: '/joinus/', label: '培訓與招募' }, { href: '/categories/', label: '內容分類' }, { href: '/pages/', label: '網站索引' }];
 const canonical = new URL(path, Astro.site);
-const siteName = '中央大學工程二館網路機房 SNMG';
-const ticker = ['SNMG E1-213', '網路維運', 'DNS 管理', '系所郵件', '網頁代管', '網管培訓招募中', settings.officeHours];
+const siteName = '工程二館網路機房｜國立中央大學';
+const ticker = ['E1-213', '網路維運', 'SNMG', 'DNS 管理', '系所郵件', '網頁代管', '網管培訓招募中'];
 ---
 <!doctype html>
 <html lang="zh-Hant">
@@ -48,7 +48,7 @@ const ticker = ['SNMG E1-213', '網路維運', 'DNS 管理', '系所郵件', '�
           <p>國立中央大學 工程二館 E1-213 室<br />{settings.officeHours}<br />{settings.phone}<br /><a href={`mailto:${settings.email}`}>{settings.email}</a></p>
         </div>
         <nav aria-label="服務"><h2>服務</h2><a href={withBase("/forms/#network")}>網路異常回報</a><a href={withBase("/forms/#dns")}>DNS 網域申請</a><a href={withBase("/forms/#mail")}>郵件服務協助</a><a href={withBase("/forms/#hosting")}>網頁代管</a></nav>
-        <nav aria-label="資訊"><h2>資訊</h2><a href={withBase("/announcements/")}>最新公告</a><a href={withBase("/documents/")}>文件教學</a><a href={withBase("/sched/")}>值班表</a><a href={withBase("/about/")}>關於機房</a><a href={withBase("/joinus/")}>培訓與招募</a></nav>
+        <nav aria-label="資訊"><h2>資訊</h2   ><a href={withBase("/announcements/")}>最新公告</a><a href={withBase("/documents/")}>文件教學</a><a href={withBase("/sched/")}>值班表</a><a href={withBase("/about/")}>關於機房</a><a href={withBase("/joinus/")}>培訓與招募</a></nav>
         <nav aria-label="相關連結"><h2>相關連結</h2><a href="https://www.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">國立中央大學 ↗</a><a href="https://www.cc.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">中央大學電算中心 ↗</a><a href="https://www2.ee.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">電機工程學系 ↗</a><a href="https://www.ce.ncu.edu.tw/" target="_blank" rel="noopener noreferrer">通訊工程學系 ↗</a><a href="https://maps.app.goo.gl/yUiPDJRYHmtqZB7z8" target="_blank" rel="noopener noreferrer">機房位置地圖 ↗</a></nav>
       </div>
       <div class="wrap footer-panel" aria-hidden="true"><span>E1-213</span><div class="ports">{Array.from({ length: 24 }, () => <i></i>)}</div><span>SNMG</span></div>
