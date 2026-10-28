@@ -1,83 +1,93 @@
 # SNMG 213
 
-中央大學工二機房：Astro 靜態前台、GitHub Pages、自行開發的 Cloudflare Workers 內容管理後台。沒有使用第三方 CMS，也不需要 VM、Node 常駐伺服器或資料庫。
+國立中央大學工程二館網路機房網站，提供服務入口、公告、教學文件、團隊介紹與值班表。
 
-- [前台](https://ncueecesnmg.github.io/snmg-213/)
-- [自製後台](https://snmg-213-admin.ncueecesnmg.workers.dev/)
-- [GitHub repo](https://github.com/ncueecesnmg/snmg-213)
-- [前台部署紀錄](https://github.com/ncueecesnmg/snmg-213/actions)
+[網站](https://ncueecesnmg.github.io/snmg-213/) · [管理後台](https://snmg-213-admin.ncueecesnmg.workers.dev/) · [部署紀錄](https://github.com/ncueecesnmg/snmg-213/actions)
 
-## 使用後台
+前台使用 Astro，發布到 GitHub Pages；後台使用 Cloudflare Workers，以 Zero Trust Access 控制登入，透過 GitHub 儲存內容。不需要自行維護伺服器或資料庫。
 
-1. 開啟後台，由 Cloudflare Zero Trust Access 登入；允許的使用者由 Access policy 管理。
-2. 登入後即可編輯文章、成員、網站介紹、聯絡資訊、值班表或其他頁面，不需要輸入 GitHub token。
-3. 內容支援 Markdown 與 HTML、預覽、草稿、日期發布、置頂、標籤、PNG/JPEG/WebP 圖片上傳（2 MB）。圖片先提交，再把圖片路徑寫進文章。
-4. 按「提交到 GitHub」產生 commit。Actions 檢查、建置成功後更新前台，實際狀態以部署紀錄為準。
+## 更新網站內容
 
-Worker 使用 `jose` 驗證 Access JWT 的 RS256 簽章、Team domain、Application AUD、有效期限與使用者身分；靜態後台與所有 API 都必須通過驗證。舊的 GitHub token 登入端點與自製 session 已移除，也不再限制為 `fearnot221` 帳號。前台網站仍公開，只有管理後台受 Access 保護。
+1. 開啟管理後台，完成 Cloudflare Access 登入。
+2. 選擇文章、成員、網站設定或值班表，編輯並預覽。
+3. 按「提交到 GitHub」，等待[部署成功](https://github.com/ncueecesnmg/snmg-213/actions)後查看網站。
 
-GitHub token 存在 Worker Secret `GITHUB_TOKEN`，不傳到瀏覽器、不存入 cookie 或 repo。所有編輯者共用這個伺服器端憑證，GitHub commit 的帳號由該 token 決定。Token 的 Resource owner 選 `ncueecesnmg`，只授權 `snmg-213`，設定 Contents: Read and write、Actions: Read-only。Token 到期或撤銷時由管理員更新 Secret，編輯者不需要重新輸入。
+一般編輯者不需要提供 GitHub token。文章支援 Markdown、HTML、草稿、預約發布、置頂與標籤；圖片接受 PNG、JPEG、WebP，每張上限 2 MB。
 
-Access 登入逾時或 GitHub token 出錯時，編輯器保留目前輸入。重新載入前先自行複製尚未儲存的內容；登出按鈕會進入 Cloudflare Access 的登出流程。Access 登出會影響同一使用者的其他 Access 應用程式，詳見 [Cloudflare session management](https://developers.cloudflare.com/cloudflare-one/access-controls/access-settings/session-management/)。
+使用時請留意：
 
-API 測試使用本機簽發的測試 JWT 與模擬 GitHub，不會修改正式 repo。
+- **這是公開 repo，草稿原始內容與 Git 歷史也公開，請勿放入機密資料。** 未發布或未來日期的文章只是不顯示在網站上。
+- 登入逾時或發生儲存衝突時，先複製保留輸入，再重新登入或讀取最新內容。尚未提交的編輯不會自動儲存。
+- 刪除成員或頁面前，先更新相關文章、值班表與連結。建置失敗時，網站維持上一次成功部署的版本。
+- 登出會結束 Cloudflare Access session，也可能影響其他 Access 應用程式，詳見 [Cloudflare 說明](https://developers.cloudflare.com/cloudflare-one/access-controls/access-settings/session-management/)。
 
-## 內容與發布
+## 本機開發
 
-- `src/content/posts/*.json`：完整公告／文章，每篇獨立檔案；日期為原始發布日期。
-- `src/content/members/*.json`：19 位成員資料與公開連結；`image` 可填入之後上傳的正式照片路徑。
-- `src/content/site/settings.json`：首頁介紹、聯絡資料與原站服務表單網址。
-- `src/content/site/schedule.json`：原站值班表與更新日期。
-- `src/content/legacy/*.json`：其他內容頁。
-- `public/images/`：LOGO、分享圖與 `placeholder.svg` 待補圖片；`public/images/uploads/` 存放後台上傳圖片。
-- `src/content/member-aliases.json`：保留已改名的成員網址，供既有文章與值班表使用。
-
-`published: false` 與未來日期的文章不輸出到前台。**Repo 是公開的，草稿原始內容與 Git 歷史仍公開，不能用來保存機密。** main push 會重建；排程每日台灣時間約 00:05 重建，GitHub 排程可能延遲或因長期無活動停用。需要時可手動執行 Actions。
-
-修改以檔案 SHA 防止覆蓋他人更新。發生衝突時，先複製保留輸入，再重新讀取最新內容合併。既有 slug 不變；刪除會留下可還原的 Git commit。刪除成員或頁面前，先更新引用它的文章、值班表與導覽；建置的連結檢查會阻止壞連結上線。建置失敗時，先前發布的前台持續服務。
-
-## 開發與部署
-
-需求 Node.js 22.23.4 以上，建議 Node 24。
+使用 Node.js **22.23.4 以上**，建議 Node.js 24。
 
 ```sh
 npm ci
 npm run dev -- --port 4321
+```
+
+開啟 [本機網站](http://localhost:4321/snmg-213/)。提交程式前執行：
+
+```sh
 npm run check
 npm run build
 npm test
 ```
 
-本機前台：`http://localhost:4321/snmg-213/`。前台由 `.github/workflows/deploy.yml` 發布，Pages 設定使用 GitHub Actions。尚未更動學校正式網域或 DNS。
+測試會檢查建置結果，因此請先 build 再 test。測試使用模擬 GitHub，不會改動正式 repo。
 
-Worker 使用 `wrangler.jsonc`，部署到 `ncueecesnmg` Cloudflare 帳號（`wrangler.jsonc` 的 `account_id`）：
+## 部署與管理員設定
+
+**前台**：push 到 `main` 後自動部署，也會每天台灣時間約 00:05 重建。可在 GitHub Actions 手動執行；排程時間可能延遲。流程定義於 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)。
+
+**後台**：手動部署到 `ncueecesnmg` Cloudflare 帳號：
 
 ```sh
 npx wrangler login
-npm run worker:dev
 npm run worker:deploy
 ```
 
-`wrangler.jsonc` 固定 repo、Cloudflare 帳號、`TEAM_DOMAIN` 與 `POLICY_AUD`。Access application 必須保護整個後台（包含 `/api/*`）；Worker 也會自行驗證 JWT，未設定或驗證失敗一律拒絕。
+後台帳號、repo、前台網址與 Access 設定都在 [wrangler.jsonc](wrangler.jsonc)。Access 必須保護整個後台，包含 `/api/*`；Worker 也會驗證登入憑證。誰能編輯網站，由 Access policy 決定。
 
-更新 GitHub 憑證：
+### 更新 GitHub token
+
+建立 fine-grained token，Resource owner 選 `ncueecesnmg`，只授權 `snmg-213`：
+
+- **Contents: Read and write**：讀寫內容與上傳圖片。
+- **Actions: Read-only**：查看部署狀態。
+
+執行下列指令，在提示後貼上 token：
 
 ```sh
 npx wrangler secret put GITHUB_TOKEN
 ```
 
-不要把 token 放進 `vars`、repo 或瀏覽器。正式部署使用 Cloudflare Secret；本機開發可使用已忽略的 `.dev.vars`，但仍需有效的 Access JWT，不提供略過驗證的開關。舊 `SESSION_KEY` 已不再使用。
+Token 只存於 Worker Secret，不會傳到瀏覽器。所有編輯者共用這個憑證，GitHub commit 的帳號由 token 決定；到期或撤銷時再更新即可。請勿把 token 寫進 repo 或 `wrangler.jsonc`。
 
-後台程式更新用 Wrangler 手動部署，前台內容 commit 則走 GitHub Actions。原 Fearnot 帳號的後台網址已改為轉址入口；舊 `/api/` 回傳 410，請在新網址重新登入。
+若需開發後台，可執行 `npm run worker:dev`；本機 Secret 放在已忽略的 `.dev.vars`，仍需有效的 Access JWT 才能存取，沒有略過登入驗證的模式。
 
-測試涵蓋 Access JWT 簽章、發行者、AUD、有效期限、靜態資源保護、伺服器端 token 不外洩、跨站請求與限流，以及內容驗證、發布排序、內部連結、XSS 清理、SHA 衝突與圖片類型。部署前先 build 再 test。
+## 檔案位置
 
-遷移已完成，匯入工具與 `migration/` 資料夾已移除。網站建置與日常維護直接使用 `src/content/`。
+| 內容 | 位置 |
+| --- | --- |
+| 公告與文章 | `src/content/posts/` |
+| 成員資料 | `src/content/members/` |
+| 網站介紹、聯絡方式與表單連結 | `src/content/site/settings.json` |
+| 值班表 | `src/content/site/schedule.json` |
+| 其他內容頁 | `src/content/legacy/` |
+| 成員舊網址對應 | `src/content/member-aliases.json` |
+| LOGO、圖片與上傳檔案 | `public/images/` |
+| 後台 API 與介面 | `worker/` |
+| 視覺與互動設計說明 | [DESIGN.md](DESIGN.md) |
 
-## 原站與驗證範圍
+舊站圖片已移除，保留待補位置。補圖時可更新成員的 `image`、文章中的 `/images/placeholder.svg`，或關於機房與招募頁的圖片路徑。成員舊網址對應請保留，避免既有文章與值班表連結失效。
 
-原站 46 個 sitemap 網址均已在本次版本產生對應頁面；含完整 7 篇文章、19 位成員、值班表、分類／標籤、元件示例與原本空白的隱私權頁。原本的 Google 表單、Drive 文件維持既有外部入口，未搬動其權限或內容。隱私權頁原站沒有條文，未替學校編造政策。
+原站 Google 表單與 Drive 文件維持原連結；學校正式網域與 DNS 尚未切換。舊 Fearnot 後台網址會轉到新後台，舊 API 已停用。
 
-舊站頭像、機櫃照片及教學截圖已移除，保留圖片位置與教學圖片說明。補圖時，成員照片可由後台填入頭像路徑；文章中的 `/images/placeholder.svg` 替換為上傳圖片路徑；關於機房與招募頁的照片位置在各自的 Astro 頁面。LOGO 使用提供的 PNG，favicon 使用中央大學校徽。
+## 授權
 
-桌面、平板與手機瀏覽器已檢查；未以實體手機、螢幕閱讀器或真實師生進行任務測試，也未宣稱取得 Awwwards / Webby / FWA 認證。視覺與動態決策見 `DESIGN.md`。
+本專案採用 [MIT License](LICENSE)。
