@@ -1,16 +1,16 @@
 {
   "name": "snmg-213-admin",
   "main": "worker/index.mjs",
-  "account_id": "786dcef12567e51b3a85a4e9a32860d9",
+  "account_id": "7a6a470dc8fc9cbc059a79013d0c9892",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "worker/public", "binding": "ASSETS", "run_worker_first": true },
   "vars": {
-    "GITHUB_OWNER": "fearnot221",
+    "GITHUB_OWNER": "ncueecesnmg",
     "GITHUB_REPO": "snmg-213",
     "GITHUB_BRANCH": "main",
     "ADMIN_LOGIN": "fearnot221",
-    "FRONTEND_URL": "https://fearnot221.github.io/snmg-213/"
+    "FRONTEND_URL": "https://ncueecesnmg.github.io/snmg-213/"
   },
   "ratelimits": [
     {"name":"LOGIN_LIMITER","namespace_id":"21301","simple":{"limit":5,"period":60}},

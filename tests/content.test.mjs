@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { getSettings, getPosts, getMembers, validatePost, validateSettings, selectPublishedPosts, renderMarkdown } from '../src/lib/content.mjs';
-import { withBase } from '../src/lib/paths.mjs';
+import { withBase, repositoryUrl } from '../src/lib/paths.mjs';
 const post = { title:'測試文章',slug:'test-post',category:'公告',summary:'摘要',body:'## 測試\n\n本文',date:'2026-01-01',published:true,pinned:false };
 
 test('repository files supply validated site settings and article content', () => {
@@ -42,6 +42,9 @@ test('production output is static, all internal page and asset URLs resolve unde
   assert.ok(existsSync('dist/index.html'),'Run npm run build before tests');
   assert.ok(!existsSync('dist/server'),'No server runtime should be deployed');
   assert.ok(existsSync('dist/admin/index.html'));
+  assert.equal(repositoryUrl,'https://github.com/ncueecesnmg/snmg-213');
+  assert.match(readFileSync('dist/index.html','utf8'),/<link rel="canonical" href="https:\/\/ncueecesnmg\.github\.io\/snmg-213\/"/);
+  assert.ok(readFileSync('dist/admin/index.html','utf8').includes(repositoryUrl));
   for(const file of htmlFiles('dist')) {
     const html=readFileSync(file,'utf8');
     assert.doesNotMatch(html,/snmg_session|ADMIN_PASSWORD|\/api\/admin|node:sqlite/);

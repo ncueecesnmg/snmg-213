@@ -7,5 +7,5 @@ export function withBase(path = '/') {
   if (path === `${base}/` || path.startsWith(`${base}/`)) return path;
   return `${base}${path}`;
 }
-export const repositoryUrl = 'https://github.com/fearnot221/snmg-213';
-export const cmsUrl = 'https://snmg-213-admin.kenin221.workers.dev/';
+export const repositoryUrl = 'https://github.com/ncueecesnmg/snmg-213';
+export const cmsUrl = 'https://snmg-213-admin.ncueecesnmg.workers.dev/';

@@ -2,18 +2,20 @@
 
 中央大學工二機房：Astro 靜態前台、GitHub Pages、自行開發的 Cloudflare Workers 內容管理後台。沒有使用第三方 CMS，也不需要 VM、Node 常駐伺服器或資料庫。
 
-- [前台](https://fearnot221.github.io/snmg-213/)
-- [自製後台](https://snmg-213-admin.kenin221.workers.dev/)
-- [GitHub repo](https://github.com/fearnot221/snmg-213)
-- [前台部署紀錄](https://github.com/fearnot221/snmg-213/actions)
+- [前台](https://ncueecesnmg.github.io/snmg-213/)
+- [自製後台](https://snmg-213-admin.ncueecesnmg.workers.dev/)
+- [GitHub repo](https://github.com/ncueecesnmg/snmg-213)
+- [前台部署紀錄](https://github.com/ncueecesnmg/snmg-213/actions)
 
 ## 使用後台
 
-1. 由 GitHub 建立 **fine-grained personal access token**。Resource owner 選 `fearnot221`，Only select repositories 只勾 `snmg-213`。
+1. 由 GitHub 建立 **fine-grained personal access token**。Resource owner 選 `ncueecesnmg`，Only select repositories 只勾 `snmg-213`。
 2. Repository permissions 給 **Contents: Read and write**；若要在後台查看建置紀錄，再給 **Actions: Read-only**。設定合適到期日。後台登入頁有建立入口。
 3. 在自製後台貼上 token 登入，編輯文章、成員、網站介紹、聯絡資訊、值班表或其他頁面。
 4. 內容支援 Markdown 與原站匯入的 HTML，提供預覽、草稿、日期發布、置頂、標籤、PNG/JPEG/WebP 圖片上傳（2 MB）。圖片先提交，再把圖片路徑寫進文章。
 5. 按「提交到 GitHub」產生 commit。Actions 檢查、建置成功後更新前台，實際狀態以部署紀錄為準。
+
+Repo 擁有者為 `ncueecesnmg` 組織，後台管理員仍為個人帳號 `fearnot221`。原先以 `fearnot221` 為 Resource owner 建立的 token，請改建為授權 `ncueecesnmg/snmg-213` 的 token；管理員帳號必須擁有該 repo 的寫入權限。
 
 這個 token 由你自己的 Worker 接收，僅送到 GitHub API。Worker 限制指定管理帳號與固定 repo。token 經 AES-GCM 加密後存入 Secure / HttpOnly / SameSite=Strict cookie，8 小時到期，不放 localStorage，也不寫進 repo。金鑰存於 Cloudflare Secret。每次請求會重新驗證 GitHub 權限。登出清除瀏覽器 cookie；若懷疑憑證遭竊，請在 GitHub 撤銷 token，這會立即阻止後續操作。不要使用本機 gh CLI 的廣泛權限憑證登入。
 
@@ -47,7 +49,7 @@ npm test
 
 本機前台：`http://localhost:4321/snmg-213/`。前台由 `.github/workflows/deploy.yml` 發布，Pages 設定使用 GitHub Actions。尚未更動學校正式網域或 DNS。
 
-Worker 使用 `wrangler.jsonc`，部署到自己的 Cloudflare 帳號：
+Worker 使用 `wrangler.jsonc`，部署到 `ncueecesnmg` Cloudflare 帳號（`wrangler.jsonc` 的 `account_id`）：
 
 ```sh
 npx wrangler login
@@ -55,7 +57,7 @@ npm run worker:dev
 npm run worker:deploy
 ```
 
-`SESSION_KEY` 需要 32 bytes 的隨機 base64url 值，以 `wrangler secret put SESSION_KEY` 設定。首次部署的金鑰已設定，不要重新產生，除非你要撤銷所有既有 session。本機 `.dev.vars` 已列入 gitignore，裡面只放開發用加密金鑰。不要提交金鑰或 token。設定 Cloudflare Secret 時，值必須是 43 字元的 base64url 字串，不能包含 `.dev.vars` 的包覆引號；讀取 `.dev.vars` 時應使用 dotenv 解析（例如 Node.js `util.parseEnv`），不能用逐行擷取代替。帳號、repo、前台網址與登入限流綁定均在 `wrangler.jsonc`。後台程式更新目前用 Wrangler 手動部署，前台內容 commit 則走 GitHub Actions。
+`SESSION_KEY` 需要 32 bytes 的隨機 base64url 值，以 `wrangler secret put SESSION_KEY` 設定。搬至 `ncueecesnmg` 帳號時已建立新的金鑰；原帳號的登入 session 不會沿用。不要重新產生，除非你要撤銷所有既有 session。本機 `.dev.vars` 已列入 gitignore，裡面只放開發用加密金鑰。不要提交金鑰或 token。設定 Cloudflare Secret 時，值必須是 43 字元的 base64url 字串，不能包含 `.dev.vars` 的包覆引號；讀取 `.dev.vars` 時應使用 dotenv 解析（例如 Node.js `util.parseEnv`），不能用逐行擷取代替。帳號、repo、前台網址與登入限流綁定均在 `wrangler.jsonc`。後台程式更新目前用 Wrangler 手動部署，前台內容 commit 則走 GitHub Actions。 原 Fearnot 帳號的後台網址已改為轉址入口；舊 `/api/` 回傳 410，請在新網址重新登入。
 
 測試涵蓋內容驗證、發布排序、內容頁與成員舊網址對應、所有內部連結、XSS 清理、登入加密、到期、跨站請求、限流、路徑限制、SHA 衝突與圖片類型。部署前先 build 再 test。
 
