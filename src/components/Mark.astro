@@ -1,7 +1,7 @@
 ---
-const { large = false } = Astro.props;
+import { withBase } from '../lib/paths.mjs';
 ---
-<span class:list={['brand-mark', { large }]} aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+<img class="brand-mark" src={withBase('/images/logo-darkmode.png')} alt="NCU EECE SNMG" width="1600" height="400" />
 <style>
-  .brand-mark{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:31px;height:27px;flex-shrink:0;align-items:end}.brand-mark i{background:currentColor;height:100%;clip-path:polygon(0 0,100% 0,100% 75%,70% 75%,70% 100%,30% 100%,30% 75%,0 75%)}.brand-mark i:nth-child(2),.brand-mark i:nth-child(5){height:72%}.large{width:80px;height:72px;gap:6px}
+  .brand-mark{width:clamp(160px,20vw,240px);height:auto;flex-shrink:0}
 </style>

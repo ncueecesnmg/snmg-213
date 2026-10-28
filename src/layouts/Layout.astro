@@ -24,7 +24,7 @@ const ticker = ['SNMG E1-213', '網路維運', 'DNS 管理', '系所郵件', '�
     <meta property="og:title" content={title || siteName} /><meta property="og:description" content={description} />
     <meta property="og:type" content="website" /><meta property="og:locale" content="zh_TW" /><meta property="og:url" content={canonical} />
     <meta property="og:image" content={new URL(withBase('/images/social.svg'), Astro.site)} />
-    <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
+    <link rel="icon" type="image/x-icon" href={withBase("/favicon.ico")} />
     <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <script is:inline>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('js-motion')</script>
     <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400..700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet" />
@@ -34,7 +34,7 @@ const ticker = ['SNMG E1-213', '網路維運', 'DNS 管理', '系所郵件', '�
     <div class="ticker"><p class="led" data-led={ticker.map(item => `${item}　·　`).join('')} data-led-rows="14" data-led-speed="18">{ticker.join('、')}</p></div>
     <header class="site-header">
       <div class="wrap header-inner">
-        <a class="brand" href={withBase("/")} aria-label="工程二館網路機房首頁"><Mark /><span class="brand-name">工程二館網路機房<span class="brand-caption">NCU EE/CE Network Management Group · E1-213</span></span></a>
+        <a class="brand" href={withBase("/")} aria-label="工程二館網路機房首頁"><Mark /></a>
         <nav class="desktop-nav" aria-label="主要導覽">{navigation.map(link => <a href={withBase(link.href)} aria-current={path === withBase(link.href) ? 'page' : undefined}>{link.label}</a>)}<details class="resource-menu"><summary>關於我們 <span aria-hidden="true">＋</span></summary><nav aria-label="關於我們">{resources.map(link => <a href={withBase(link.href)}>{link.label}</a>)}</nav></details><i class="nav-dot" aria-hidden="true"></i></nav>
         <a class="header-action" href={withBase("/forms/#network")}>網路問題回報</a>
         <details class="mobile-menu"><summary aria-label="開啟導覽選單"><span class="burger" aria-hidden="true"><i></i><i></i></span>選單</summary><nav aria-label="手機導覽">{navigation.map(link => <a href={withBase(link.href)}>{link.label}</a>)}{resources.map(link => <a href={withBase(link.href)}>{link.label}</a>)}<a href={withBase("/forms/#network")}>網路問題回報</a></nav></details>
@@ -44,7 +44,7 @@ const ticker = ['SNMG E1-213', '網路維運', 'DNS 管理', '系所郵件', '�
     <footer class="site-footer">
       <div class="wrap footer-unit">
         <div class="footer-brand">
-          <a href={withBase("/")} class="brand"><Mark /><span class="brand-name">工程二館網路機房<span class="brand-caption">SNMG · E1-213</span></span></a>
+          <a href={withBase("/")} class="brand" aria-label="工程二館網路機房首頁"><Mark /></a>
           <p>國立中央大學 工程二館 E1-213 室<br />{settings.officeHours}<br />{settings.phone}<br /><a href={`mailto:${settings.email}`}>{settings.email}</a></p>
         </div>
         <nav aria-label="服務"><h2>服務</h2><a href={withBase("/forms/#network")}>網路異常回報</a><a href={withBase("/forms/#dns")}>DNS 網域申請</a><a href={withBase("/forms/#mail")}>郵件服務協助</a><a href={withBase("/forms/#hosting")}>網頁代管</a></nav>

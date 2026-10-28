@@ -37,8 +37,6 @@ p{text-wrap:pretty}
 .site-header{position:sticky;top:0;z-index:60;background:var(--black);border-bottom:1px solid var(--line)}
 .header-inner{display:flex;align-items:center;gap:28px;height:var(--header)}
 .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
-.brand-name{font-size:18px;font-weight:700;line-height:1.2}
-.brand-caption{display:block;font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);margin-top:3px}
 .desktop-nav{position:relative;display:flex;align-items:center;gap:26px;font-size:15px;font-weight:500;white-space:nowrap}
 .desktop-nav>a,.resource-menu summary{color:color-mix(in srgb,var(--fg) 62%,transparent);line-height:1.7;transition:color .3s ease}
 .desktop-nav>a[aria-current=page],.resource-menu[open] summary{color:var(--fg)}
@@ -455,7 +453,6 @@ p{text-wrap:pretty}
   .net-title p{display:none}
   .net-hud{flex-direction:column;align-items:stretch;gap:10px}
   .ticker .led{height:18px;line-height:18px}
-  .brand-caption{display:none}
   .hero-actions .button{flex:1;justify-content:center}
   .service-grid{grid-template-columns:1fr}
   .news-table a{grid-template-columns:auto 1fr;gap:4px 12px}

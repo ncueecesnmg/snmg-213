@@ -30,11 +30,7 @@ p { text-wrap:pretty }
 .primary:active,.secondary:active,.danger:active { transform:scale(.98) }
 .wordmark { display:inline-flex; align-items:center; gap:12px; font-size:29px; font-weight:700; line-height:1; letter-spacing:-.05em }
 .wordmark:hover { text-decoration:none }
-.wordmark>span:not(.brand-mark) { display:block }
-.wordmark small { display:block; margin-top:8px; color:var(--muted); font-size:12px; font-weight:500; letter-spacing:0; line-height:1.5 }
-.brand-mark { display:grid; grid-template-columns:repeat(3,1fr); align-items:end; gap:3px; width:31px; height:27px; flex-shrink:0 }
-.brand-mark i { height:100%; background:currentColor; clip-path:polygon(0 0,100% 0,100% 75%,70% 75%,70% 100%,30% 100%,30% 75%,0 75%) }
-.brand-mark i:nth-child(2),.brand-mark i:nth-child(5) { height:72% }
+.brand-mark { display:block; width:240px; max-width:100%; height:auto }
 .login-screen { display:grid; grid-template-columns:1fr 1fr; min-height:100svh }
 .login-brand { --muted:#a3a39d; display:flex; flex-direction:column; align-items:start; justify-content:space-between; gap:48px; padding:clamp(32px,4.5vw,72px); background:var(--black); color:var(--white) }
 .login-brand h1 { font-size:clamp(38px,4.2vw,68px); line-height:1.35 }
@@ -57,9 +53,7 @@ p { text-wrap:pretty }
 .message.error { background:#f3eaea; color:#842121; border-color:#9c2828 }
 .message a { text-decoration:underline }
 .sidebar { --muted:#a3a39d; position:fixed; inset:0 auto 0 0; z-index:10; width:235px; display:flex; flex-direction:column; gap:0; padding:34px 24px max(28px,env(safe-area-inset-bottom)); background:var(--black); color:var(--white); overflow:auto }
-.sidebar .wordmark { font-size:27px }
-.sidebar .brand-mark { width:26px; height:24px }
-.sidebar .wordmark small { font-size:12px }
+.sidebar .wordmark { max-width:100% }
 .site-label { margin-top:48px; margin-bottom:28px; font-size:14px; font-weight:500 }
 .site-label span { display:block; color:var(--muted); margin-top:8px; font:13px/1.7 var(--mono); overflow-wrap:anywhere }
 .sidebar nav { display:flex; flex-direction:column; gap:3px }
