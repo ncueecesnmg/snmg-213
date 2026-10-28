@@ -1282,8 +1282,12 @@ p {
 }
 .article-layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 780px);
+  grid-template-columns: 160px minmax(0, 1fr);
   gap: clamp(32px, 6vw, 80px);
+  column-gap: 32px;
+}
+.article-body > .prose {
+  max-width: none;
 }
 .article-sidebar {
   font-size: 14px;
@@ -1340,15 +1344,7 @@ p {
   font-family: var(--mono);
   transition: color 0.3s ease;
 }
-.article-origin {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 20px;
-}
-.article-origin a {
-  text-decoration: underline;
-  white-space: nowrap;
-}
+
 .next-article {
   position: relative;
   isolation: isolate;
@@ -1385,7 +1381,7 @@ p {
   margin-top: 4px;
 }
 
-/* Documents: one section per topic, guides on the left and tutorial articles on the right */
+/* Downloads grouped by service topic */
 .doc-jump {
   margin-bottom: 8px;
 }
@@ -1413,11 +1409,6 @@ p {
   color: var(--muted);
   font-size: 15px;
   margin-top: 2px;
-}
-.doc-topic-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(24px, 4vw, 56px);
 }
 .doc-label {
   font-family: var(--mono);
@@ -1462,33 +1453,10 @@ p {
   font-size: 12px;
   margin-top: 6px;
 }
-.doc-file i,
-.doc-articles i {
+.doc-file i {
   font-style: normal;
   color: var(--muted);
   transition: transform 0.5s var(--ease);
-}
-.doc-articles {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.doc-articles a {
-  display: grid;
-  grid-template-columns: 96px minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: baseline;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-}
-.doc-articles time {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--muted);
-}
-.doc-articles span {
-  font-weight: 600;
-  transition: translate 0.5s var(--ease);
 }
 .doc-help {
   margin-top: 16px;
@@ -1913,12 +1881,10 @@ p {
   .duty-day a:hover {
     background-size: 100% 1px;
   }
-  .doc-file:hover strong,
-  .doc-articles a:hover span {
+  .doc-file:hover strong {
     translate: 6px 0;
   }
-  .doc-file:hover i,
-  .doc-articles a:hover i {
+  .doc-file:hover i {
     transform: translate(3px, -3px);
   }
   .next-article:hover::before {
@@ -2174,8 +2140,7 @@ p {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .directory-grid,
-  .support-list,
-  .doc-topic-body {
+  .support-list {
     grid-template-columns: 1fr;
   }
   .ports {

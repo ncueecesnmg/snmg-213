@@ -3,6 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import {getLegacyPages,renderMarkdown} from '../lib/content.mjs';
 import {withBase} from '../lib/paths.mjs';
 const extra=getLegacyPages().find(page=>page.path==='/pages/');
-const groups=[['服務與資訊',[['服務與支援','/forms/'],['公告與文章','/announcements/'],['教學文件','/documents/'],['機房值班表','/sched/']]],['認識團隊',[['關於機房','/about/'],['團隊成員','/members/'],['培訓與招募','/joinus/']]],['內容索引',[['內容分類','/categories/'],['主題標籤','/tags/'],['隱私權說明','/privacy-policy/'],['內容元件示例','/elements/']]]];
+const groups=[['服務與資訊',[['服務與支援','/forms/'],['最新公告','/announcements/'],['教學文章','/tutorials/'],['文件下載','/documents/'],['機房值班表','/sched/']]],['認識團隊',[['關於機房','/about/'],['團隊成員','/members/'],['培訓與招募','/joinus/']]],['內容索引',[['內容分類','/categories/'],['主題標籤','/tags/'],['隱私權說明','/privacy-policy/'],['內容元件示例','/elements/']]]];
 ---
 <Layout title="網站索引"><header class="page-intro wrap"><a class="back-link" href={withBase('/')}>首頁</a><h1>網站索引</h1><p>快速找到機房服務、團隊與網站內容。</p></header><div class="page-content wrap">{extra?.body&&<div class="prose" set:html={renderMarkdown(extra.body)}></div>}<div class="directory-grid">{groups.map(([label,links])=><section><h2>{label}</h2><nav aria-label={String(label)}>{(links as string[][]).map(([label,href])=><a href={withBase(href)}>{label}<span aria-hidden="true">↗</span></a>)}</nav></section>)}</div></div></Layout>

@@ -69,3 +69,16 @@ test('content validates and current documents, member aliases and taxonomy route
   for(const path of routes)assert.ok(existsSync(`dist${path}index.html`),path);
 });
 test('original HTML images stay images and Markdown heading IDs remain unique',()=>{const html=renderMarkdown('<h2 id="original">標題</h2>\n    <img src="/images/a.png" alt="截圖">');assert.match(html,/<img src="\/snmg-213\/images\/a.png"/);assert.doesNotMatch(html,/<pre>/);assert.deepEqual(articleHeadings(renderMarkdown('## 同一標題\n\n## 同一標題')).map(item=>item.id),['同一標題','同一標題-1']);});
+
+test('editors can pin and unpin an announcement without changing its content', async () => {
+  const assertion = await accessToken();
+  for (const pinned of [true, false]) {
+    const calls = [];
+    const data = {...post, published:true, pinned};
+    const response = await request('/api/content?collection=posts&file=test.json', 'PUT', {data, sha}, {fetcher:mockGitHub(calls)}, assertion);
+    assert.equal(response.status, 200);
+    const write = calls.find(call => call.method === 'PUT');
+    const saved = JSON.parse(Buffer.from(JSON.parse(write.body).content, 'base64'));
+    assert.deepEqual(saved, data);
+  }
+});

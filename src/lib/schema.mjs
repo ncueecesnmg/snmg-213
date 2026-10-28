@@ -65,7 +65,7 @@ export function validateDocument(collection, data, filename) {
   } else if (collection === 'legacy') {
     requiredString(data.title, '頁面標題', 100);
     if (`${data.path?.slice(1,-1)}.json` !== filename) throw new Error('頁面路徑與檔名不一致。');
-    if (!/^\/[\p{L}\p{N}_-]+\/$/u.test(data.path) || /^(?:\/)(?:admin|api|about|forms|members|sched|joinus|documents|announcements|categories|tags)\/$/.test(data.path)) throw new Error('頁面路徑與既有頁面衝突。');
+    if (!/^\/[\p{L}\p{N}_-]+\/$/u.test(data.path) || /^(?:\/)(?:admin|api|about|forms|members|sched|joinus|documents|tutorials|announcements|categories|tags)\/$/.test(data.path)) throw new Error('頁面路徑與既有頁面衝突。');
     if (typeof data.body !== 'string' || data.body.length > 100000) throw new Error('頁面內容過長。');
   } else if (filename === 'settings.json') validateSettings(data);
   else if (filename === 'schedule.json') {

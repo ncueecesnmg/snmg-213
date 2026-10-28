@@ -54,7 +54,7 @@ function renderEditor() {
   $('#editor-empty').hidden=true;$('#editor-form').hidden=false;$('#fields').replaceChildren();$('#document-title').textContent=current.sha?current.filename:'新增內容';$('#delete').hidden=!current.sha||collection==='site';setDirty(false);
   const required={required:true};
   if(collection==='posts') {
-    field('title','文章標題','text',{...required,max:100});field('slug','文章網址（既有網址保留不變）','text',{...required,readOnly:!!current.sha,max:120});field('category','分類','select',required);field('summary','摘要','textarea',{...required,max:300});field('date','發布日期','date',required);field('tags','標籤，以頓號或逗號分隔');field('published','公開發布','checkbox');field('pinned','置頂文章','checkbox');field('source','原文參考網址（選填）','url');field('body','內容（支援 Markdown 與已匯入的 HTML）','textarea',{...required,max:50000});
+    field('title','文章標題','text',{...required,max:100});field('pinned','置頂公告／文章（優先顯示於首頁與公告列表；取消勾選即可解除）','checkbox');field('slug','文章網址（既有網址保留不變）','text',{...required,readOnly:!!current.sha,max:120});field('category','分類','select',required);field('summary','摘要','textarea',{...required,max:300});field('date','發布日期','date',required);field('tags','標籤，以頓號或逗號分隔');field('published','公開發布','checkbox');field('source','原文參考網址（選填）','url');field('body','內容（支援 Markdown 與已匯入的 HTML）','textarea',{...required,max:50000});
   } else if(collection==='members') {
     field('name','成員姓名','text',required);field('slug','成員網址','text',{...required,readOnly:!!current.sha});field('attributes','年級、職務與加入年份');field('image','頭像網址');field('links','個人連結，每行一個 HTTPS 或 mailto 連結','textarea');field('body','成員介紹（Markdown / HTML）','textarea');
   } else if(collection==='legacy') {

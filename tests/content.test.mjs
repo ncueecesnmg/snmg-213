@@ -4,6 +4,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { getSettings, getPosts, getMembers, validatePost, validateSettings, selectPublishedPosts, renderMarkdown } from '../src/lib/content.mjs';
 import { withBase, repositoryUrl } from '../src/lib/paths.mjs';
+import { documents } from '../src/lib/seed.mjs';
 const post = { title:'測試文章',slug:'test-post',category:'公告',summary:'摘要',body:'## 測試\n\n本文',date:'2026-01-01',published:true,pinned:false };
 
 test('repository files supply validated site settings and article content', () => {
@@ -16,6 +17,15 @@ test('drafts and future posts are excluded; pinned posts precede newer articles'
   const published = selectPublishedPosts([post,{...post,slug:'draft',published:false},{...post,slug:'future',date:'2099-01-01'},{...post,slug:'pinned',pinned:true,date:'2025-01-01'}],'2026-10-22');
   assert.deepEqual(published.map(p=>p.slug),['pinned','test-post']);
   assert.ok(selectPublishedPosts([{...post,date:'2026-10-22'}],'2026-10-22').length);
+});
+test('multiple pinned announcements sort by date and unpinned posts return to date order', () => {
+  const posts = [
+    {...post, slug:'latest', date:'2026-10-01'},
+    {...post, slug:'older-pin', pinned:true, date:'2026-01-01'},
+    {...post, slug:'newer-pin', pinned:true, date:'2026-02-01'},
+  ];
+  assert.deepEqual(selectPublishedPosts(posts, '2026-10-28').map(post => post.slug), ['newer-pin','older-pin','latest']);
+  assert.deepEqual(selectPublishedPosts(posts.map(post => ({...post, pinned:false})), '2026-10-28').map(post => post.slug), ['latest','newer-pin','older-pin']);
 });
 test('invalid content and duplicate slugs fail the build', () => {
   for (const change of [{title:''},{slug:'../escape'},{date:'2026-02-30'},{category:'unknown'},{published:'false'},{pinned:1},{body:'a'.repeat(50001)},{source:'javascript:alert(1)'}]) assert.throws(()=>validatePost({...post,...change}));
@@ -75,4 +85,27 @@ test('retired site images are replaced with placeholders while article context r
     assert.doesNotMatch(html,/<img\b[^>]*snmg\.ce\.ncu\.edu\.tw/);
   }
   for(const person of getMembers().filter(person=>!person.image))assert.match(readFileSync(`dist/members/${person.slug}/index.html`,'utf8'),/placeholder\.svg/);
+});
+
+test('downloads and tutorials have dedicated pages separate from announcements', () => {
+  const html = readFileSync('dist/documents/index.html', 'utf8');
+  const main = html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)[1];
+  assert.match(main, /<h1>文件下載<\/h1>/);
+  assert.doesNotMatch(main, /class="doc-articles"|href="[^"]*\/announcements\/[^"?]+/);
+  assert.equal((main.match(/class="doc-file"/g) || []).length, documents.length);
+  for (const doc of documents) {
+    assert.ok(main.includes(doc.title));
+    assert.ok(main.includes(doc.url.replaceAll('&', '&amp;')));
+    const url = new URL(doc.url);
+    assert.equal(url.hostname, 'drive.google.com');
+    assert.equal(url.searchParams.get('export'), 'download');
+    assert.ok(url.searchParams.get('id'));
+  }
+  const articles = readFileSync('dist/announcements/index.html', 'utf8');
+  const tutorials = readFileSync('dist/tutorials/index.html', 'utf8');
+  for (const post of getPosts()) {
+    assert.equal(tutorials.includes(post.title), post.category === '教學文件');
+    assert.equal(articles.includes(post.title), post.category !== '教學文件');
+    assert.ok(existsSync(`dist/announcements/${post.slug}/index.html`));
+  }
 });

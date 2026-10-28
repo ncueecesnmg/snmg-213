@@ -3,7 +3,7 @@ import { withBase } from '../lib/paths.mjs';
 import Layout from '../layouts/Layout.astro';
 import { getSettings, getPosts, getSchedule, formatDate } from '../lib/content.mjs';
 const s = getSettings();
-const posts = getPosts().slice(0, 8);
+const posts = getPosts().filter(post => post.category !== '教學文件').slice(0, 8);
 const schedule = getSchedule();
 // Today's duty per weekday (1–5): only the slots someone is on.
 const duty = [1, 2, 3, 4, 5].map(day => schedule.rows.filter((row: any[]) => row[day].members.length).map((row: any[]) => ({ time: row[0].text, members: row[day].members })));
@@ -13,7 +13,7 @@ const services = [
   { title: 'DNS 網域申請', proto: 'udp/53', text: '教職員與實驗室可申請通訊系或電機系網域下的主機名稱。', href: '/forms/#dns', action: '申請網域', icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18' },
   { title: '系所電子郵件', proto: 'tcp/587', text: '管理系所 Google Workspace，協助帳號設定、收發信與郵件轉移。', href: '/forms/#mail', action: '郵件問題協助', icon: 'M3 6h18v12H3zM3 7l9 6 9-6' },
   { title: '網頁代管', proto: 'tcp/443', text: '教授與實驗室靜態網站代管、FTPS 更新與 Reverse Proxy 維護。', href: '/forms/#hosting', action: '洽詢代管', icon: 'M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01' },
-  { title: '文件與教學', proto: 'docs', text: '無線網路連線、郵件軟體設定等操作文件與教學文章。', href: '/documents/', action: '瀏覽文件', icon: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h6' },
+  { title: '文件下載', proto: 'docs', text: '下載無線網路連線與系所郵件設定的操作文件。', href: '/documents/', action: '下載文件', icon: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h6' },
   { title: '值班與到訪', proto: 'E1-213', text: `${s.officeHours}，可至工程二館 E1-213 找值班人員協助。`, href: '/sched/', action: '查看值班表', icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2' },
 ];
 const links = [
