@@ -1,37 +1,22 @@
 import { validateDocument, collections } from '../src/lib/schema.mjs';
 import { renderMarkdown } from '../src/lib/markdown.mjs';
-const encoder = new TextEncoder();
+import { createRemoteJWKSet, customFetch, jwtVerify } from 'jose';
 const decoder = new TextDecoder();
-const maxAge = 8 * 60 * 60;
 const json = (data, status = 200, headers = {}) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store', ...headers } });
 function fail(message, status = 400) { const error = new Error(message); error.status = status; throw error; }
-const encode = bytes => btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
-const decode = text => Uint8Array.from(atob(text.replaceAll('-','+').replaceAll('_','/')), c => c.charCodeAt(0));
 const fileEncode = text => Buffer.from(text,'utf8').toString('base64');
 const fileDecode = text => Buffer.from(text,'base64').toString('utf8');
-const cookieName = url => url.protocol === 'https:' ? '__Host-snmg' : 'snmg_local';
-function cookie(url, value, age = maxAge) {
-  return `${cookieName(url)}=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${url.protocol === 'https:' ? '; Secure' : ''}`;
-}
-async function key(secret) {
-  if (!secret) fail('後台尚未設定加密金鑰。',503);
-  if (typeof secret !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(secret)) fail('後台登入金鑰設定無效，請由網站管理員檢查 SESSION_KEY。',503);
-  return crypto.subtle.importKey('raw',decode(secret),'AES-GCM',false,['encrypt','decrypt']);
-}
-export async function sealSession(data, secret, origin) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt({ name:'AES-GCM',iv,additionalData:encoder.encode(origin) },await key(secret),encoder.encode(JSON.stringify(data)));
-  return `${encode(iv)}.${encode(new Uint8Array(encrypted))}`;
-}
-export async function openSession(value, secret, origin) {
+const keySets = new Map();
+async function accessIdentity(request, env, fetcher) {
+  if(!/^https:\/\/[a-z0-9-]+\.cloudflareaccess\.com$/.test(env.TEAM_DOMAIN||'') || !env.POLICY_AUD)fail('後台尚未設定 Cloudflare Access。',503);
+  const assertion=request.headers.get('cf-access-jwt-assertion');
+  if(!assertion)fail('請透過 Cloudflare Access 登入管理後台。',401);
+  if(!keySets.has(env.TEAM_DOMAIN))keySets.set(env.TEAM_DOMAIN,createRemoteJWKSet(new URL(`${env.TEAM_DOMAIN}/cdn-cgi/access/certs`),{[customFetch]:fetcher}));
   try {
-    if (!value || value.length > 3000) return null;
-    const [iv, encrypted] = value.split('.');
-    const clear = await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(iv),additionalData:encoder.encode(origin)},await key(secret),decode(encrypted));
-    const data = JSON.parse(decoder.decode(clear));
-    if (!data.token || data.expires <= Date.now()) return null;
-    return data;
-  } catch { return null; }
+    const {payload}=await jwtVerify(assertion,keySets.get(env.TEAM_DOMAIN),{issuer:env.TEAM_DOMAIN,audience:env.POLICY_AUD,algorithms:['RS256'],requiredClaims:['exp','sub','email']});
+    if(payload.type!=='app'||typeof payload.email!=='string'||!payload.email)fail('需要使用者身分登入。',401);
+    return payload;
+  } catch { fail('Cloudflare Access 登入已失效，請重新登入。',401); }
 }
 async function readJson(request, limit = 250000) {
   if (!request.headers.get('content-type')?.startsWith('application/json')) fail('請使用 JSON 格式。',415);
@@ -50,7 +35,7 @@ async function github(token, path, options, fetcher) {
   const response=await fetcher(`https://api.github.com${path}`,{
     ...options,headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'SNMG-213-Own-CMS',...(options?.body?{'Content-Type':'application/json'}:{})},signal:AbortSignal.timeout(15000),
   });
-  if(response.status===401)fail('GitHub 憑證已失效，請重新登入。',401);
+  if(response.status===401)fail('後台 GitHub token 已失效，請由管理員更新 GITHUB_TOKEN。',503);
   if(response.status===403)fail('GitHub 拒絕操作；請確認 token 的 Contents 讀寫權限或稍後重試。',403);
   if(response.status===409||response.status===422)fail('內容已有新版本或網址重複。輸入內容已保留，請先重新讀取後再合併。',409);
   if(response.status===404)return null;
@@ -58,36 +43,16 @@ async function github(token, path, options, fetcher) {
   return response.status===204?{}:response.json();
 }
 const repo = env => `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}`;
-async function identity(env, token, fetcher) {
-  const [user, repository]=await Promise.all([
-    github(token,'/user',{},fetcher),github(token,repo(env),{},fetcher),
-  ]);
-  if(!user || user.login.toLowerCase()!==env.ADMIN_LOGIN.toLowerCase() || !repository?.permissions?.push)fail('這個 GitHub 帳號沒有管理此網站的權限。',403);
-  return user.login;
-}
 const contentPath=(env,collection,filename='')=>`${repo(env)}/contents/${collections[collection].path}${filename?`/${encodeURIComponent(filename)}`:''}`;
 export async function handleRequest(request, env, fetcher = fetch) {
   const url=new URL(request.url);
   try {
+    const identity=await accessIdentity(request,env,fetcher);
     if(!url.pathname.startsWith('/api/'))return secure(await env.ASSETS.fetch(request));
     if(request.method!=='GET' && request.headers.get('origin')!==url.origin)fail('拒絕跨站請求。',403);
-    if(url.pathname==='/api/login' && request.method==='POST') {
-      if(!env.LOGIN_LIMITER)fail('後台尚未設定登入限流。',503);
-      const {success}=await env.LOGIN_LIMITER.limit({key:`login:${request.headers.get('cf-connecting-ip')||'local'}`});
-      if(!success)fail('登入嘗試過多，請稍後重試。',429);
-      const {token}=await readJson(request,3000);
-      if(typeof token!=='string'||token.length<20||token.length>512||/\s/.test(token))fail('請輸入有效的 GitHub token。');
-      const login=await identity(env,token,fetcher);
-      const session=await sealSession({token,login,expires:Date.now()+maxAge*1000},env.SESSION_KEY,url.origin);
-      return secure(json({login},200,{'Set-Cookie':cookie(url,session)}));
-    }
-    const value=request.headers.get('cookie')?.split(';').map(s=>s.trim()).find(s=>s.startsWith(`${cookieName(url)}=`))?.split('=').slice(1).join('=');
-    const session=await openSession(value,env.SESSION_KEY,url.origin);
-    if(!session)fail('請先登入管理後台。',401);
-    if(url.pathname==='/api/logout' && request.method==='POST')return secure(json({ok:true},200,{'Set-Cookie':cookie(url,'',0)}));
-    await identity(env,session.token,fetcher);
-    if(env.API_LIMITER && !(await env.API_LIMITER.limit({key:`api:${session.login}`})).success)fail('操作較頻繁，請稍後重試。',429);
-    if(url.pathname==='/api/session' && request.method==='GET')return secure(json({login:session.login,repository:`${env.GITHUB_OWNER}/${env.GITHUB_REPO}`,branch:env.GITHUB_BRANCH,frontend:env.FRONTEND_URL}));
+    if(env.API_LIMITER && !(await env.API_LIMITER.limit({key:`api:${identity.sub}`})).success)fail('操作較頻繁，請稍後重試。',429);
+    if(typeof env.GITHUB_TOKEN!=='string'||env.GITHUB_TOKEN.length<20||/\s/.test(env.GITHUB_TOKEN))fail('後台尚未設定有效的 GITHUB_TOKEN。',503);
+    if(url.pathname==='/api/session' && request.method==='GET')return secure(json({login:identity.email,repository:`${env.GITHUB_OWNER}/${env.GITHUB_REPO}`,branch:env.GITHUB_BRANCH,frontend:env.FRONTEND_URL}));
     if(url.pathname==='/api/preview' && request.method==='POST') {
       const {body}=await readJson(request);if(typeof body!=='string'||body.length>100000)fail('內容過長。');
       const html=renderMarkdown(body,path=>path.startsWith('/')&&!path.startsWith('//') ? new URL(path.startsWith('/snmg-213/') ? path : `/snmg-213${path}`,env.FRONTEND_URL).href : path);
@@ -99,7 +64,7 @@ export async function handleRequest(request, env, fetcher = fetch) {
       const filename=url.searchParams.get('file');
       if(filename && !/^[\p{L}\p{N}_-]+\.json$/u.test(filename))fail('不允許的檔案路徑。');
       if(request.method==='GET') {
-        const raw=await github(session.token,`${contentPath(env,collection,filename)}?ref=${encodeURIComponent(env.GITHUB_BRANCH)}`,{},fetcher);
+        const raw=await github(env.GITHUB_TOKEN,`${contentPath(env,collection,filename)}?ref=${encodeURIComponent(env.GITHUB_BRANCH)}`,{},fetcher);
         if(!raw)fail('找不到內容。',404);
         if(filename)return secure(json({filename,sha:raw.sha,data:JSON.parse(fileDecode(raw.content))}));
         if(!Array.isArray(raw))fail('內容列表格式不正確。',502);
@@ -116,14 +81,14 @@ export async function handleRequest(request, env, fetcher = fetch) {
       if(request.method==='PUT') {
         try { validateDocument(collection,input.data,filename); } catch (error) { fail(error.message); }
         if(input.sha && !/^[a-f0-9]{40}$/.test(input.sha))fail('版本格式錯誤。');
-        const saved=await github(session.token,contentPath(env,collection,filename),{method:'PUT',body:JSON.stringify({message:`content: ${input.sha?'update':'add'} ${collection}/${filename}`,branch:env.GITHUB_BRANCH,content:fileEncode(JSON.stringify(input.data,null,2)+'\n'),...(input.sha?{sha:input.sha}:{})})},fetcher);
+        const saved=await github(env.GITHUB_TOKEN,contentPath(env,collection,filename),{method:'PUT',body:JSON.stringify({message:`content: ${input.sha?'update':'add'} ${collection}/${filename}`,branch:env.GITHUB_BRANCH,content:fileEncode(JSON.stringify(input.data,null,2)+'\n'),...(input.sha?{sha:input.sha}:{})})},fetcher);
         if(!saved)fail('找不到儲存位置。',404);
         return secure(json({sha:saved.content.sha,commit:saved.commit.html_url,commitSha:saved.commit.sha}));
       }
       if(request.method==='DELETE') {
         if(collection==='site')fail('網站設定不能刪除。',403);
         if(input.confirm!==true||!/^[a-f0-9]{40}$/.test(input.sha||''))fail('請確認刪除並提供目前版本。');
-        const removed=await github(session.token,contentPath(env,collection,filename),{method:'DELETE',body:JSON.stringify({message:`content: remove ${collection}/${filename}`,branch:env.GITHUB_BRANCH,sha:input.sha})},fetcher);
+        const removed=await github(env.GITHUB_TOKEN,contentPath(env,collection,filename),{method:'DELETE',body:JSON.stringify({message:`content: remove ${collection}/${filename}`,branch:env.GITHUB_BRANCH,sha:input.sha})},fetcher);
         if(!removed)fail('內容已不存在。',404);
         return secure(json({ok:true,commit:removed.commit.html_url}));
       }
@@ -139,11 +104,11 @@ export async function handleRequest(request, env, fetcher = fetch) {
       else if(bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP')extension='webp';
       else fail('僅接受 PNG、JPEG 或 WebP 圖片。');
       const name=`${crypto.randomUUID()}.${extension}`;
-      const saved=await github(session.token,`${repo(env)}/contents/public/images/uploads/${name}`,{method:'PUT',body:JSON.stringify({message:`content: upload ${name}`,branch:env.GITHUB_BRANCH,content})},fetcher);
+      const saved=await github(env.GITHUB_TOKEN,`${repo(env)}/contents/public/images/uploads/${name}`,{method:'PUT',body:JSON.stringify({message:`content: upload ${name}`,branch:env.GITHUB_BRANCH,content})},fetcher);
       return secure(json({path:`/images/uploads/${name}`,commit:saved.commit.html_url}));
     }
     if(url.pathname==='/api/deployments' && request.method==='GET') {
-      const result=await github(session.token,`${repo(env)}/actions/runs?branch=${encodeURIComponent(env.GITHUB_BRANCH)}&per_page=5`,{},fetcher);
+      const result=await github(env.GITHUB_TOKEN,`${repo(env)}/actions/runs?branch=${encodeURIComponent(env.GITHUB_BRANCH)}&per_page=5`,{},fetcher);
       return secure(json({runs:(result?.workflow_runs||[]).map(r=>({status:r.status,conclusion:r.conclusion,url:r.html_url,sha:r.head_sha}))}));
     }
     fail('找不到此操作。',404);
@@ -151,6 +116,7 @@ export async function handleRequest(request, env, fetcher = fetch) {
 }
 function secure(response) {
   const result=new Response(response.body,response);
+  result.headers.set('Cache-Control','no-store');
   result.headers.set('X-Content-Type-Options','nosniff');
   result.headers.set('Referrer-Policy','no-referrer');
   result.headers.set('X-Frame-Options','DENY');

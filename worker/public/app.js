@@ -2,26 +2,23 @@ const $ = selector => document.querySelector(selector);
 const labels = { posts:'文章與公告',members:'團隊成員',site:'網站與值班表',legacy:'其他頁面' };
 let collection='posts', files=[], current=null, dirty=false, saving=false, loadVersion=0;
 async function api(path,options={}) {
-  const response=await fetch(`/api/${path}`,{...options,headers:{'Content-Type':'application/json',...options.headers}});
+  const response=await fetch(`/api/${path}`,{...options,headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest',...options.headers}});
+  if(response.status===401||response.redirected){throw new Error('登入已逾時，請先保留目前內容，再重新載入頁面登入。');}
+  if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('無法讀取後台回應，請保留內容後重新登入。');
   const data=await response.json();
-  if(!response.ok){if(response.status===401)showLogin();throw new Error(data.error||'操作失敗，請稍後重試。');}
+  if(!response.ok)throw new Error(data.error||'操作失敗，請稍後重試。');
   return data;
 }
 function showMessage(target,text,error=false,url) {
   target.hidden=false;target.classList.toggle('error',error);target.replaceChildren(document.createTextNode(text));
   if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=' 查看 commit ↗';target.append(link);}
 }
-function showLogin() {$('#login-screen').hidden=false;$('#app').hidden=true;}
 function setDirty(value) {dirty=value;$('#dirty-status').textContent=value?'尚未提交的修改':'已與 GitHub 同步';}
 function canDiscard(){if(saving)return false;return !dirty||confirm('目前有尚未提交的修改。確定要離開並捨棄嗎？');}
 async function start() {
-  try{const session=await api('session');$('#identity').textContent=session.login;$('#repository').textContent=`${session.repository} · ${session.branch}`;$('#login-screen').hidden=true;$('#app').hidden=false;await loadCollection('posts');await deployments();}catch(error){if(!$('#app').hidden)showMessage($('#app-message'),error.message,true);}
+  try{const session=await api('session');$('#identity').textContent=session.login;$('#repository').textContent=`${session.repository} · ${session.branch}`;$('#login-screen').hidden=true;$('#app').hidden=false;await loadCollection('posts');await deployments();}catch(error){showMessage($('#app').hidden?$('#login-message'):$('#app-message'),error.message,true);}
 }
-$('#login-form').addEventListener('submit',async event=>{
-  event.preventDefault();const button=event.submitter;button.disabled=true;button.textContent='確認 GitHub 權限中…';
-  try{await api('login',{method:'POST',body:JSON.stringify({token:$('#token').value.trim()})});$('#token').value='';$('#login-message').hidden=true;await start();}catch(error){showMessage($('#login-message'),error.message,true);}finally{button.disabled=false;button.textContent='登入管理後台 ↗';}
-});
-$('#logout').addEventListener('click',async()=>{if(!canDiscard())return;try{await api('logout',{method:'POST',body:'{}'});current=null;setDirty(false);showLogin();}catch(error){showMessage($('#app-message'),error.message,true);}});
+$('#logout').addEventListener('click',()=>{if(canDiscard())location.assign('/cdn-cgi/access/logout');});
 document.querySelectorAll('[data-collection]').forEach(button=>button.addEventListener('click',()=>{if(canDiscard())loadCollection(button.dataset.collection);}));
 async function loadCollection(name) {
   const version=++loadVersion;collection=name;current=null;setDirty(false);$('#editor-form').hidden=true;$('#editor-empty').hidden=false;$('#filter').value='';$('#collection-title').textContent=labels[name];$('#new-document').hidden=name==='site';

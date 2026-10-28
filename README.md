@@ -9,17 +9,18 @@
 
 ## 使用後台
 
-1. 由 GitHub 建立 **fine-grained personal access token**。Resource owner 選 `ncueecesnmg`，Only select repositories 只勾 `snmg-213`。
-2. Repository permissions 給 **Contents: Read and write**；若要在後台查看建置紀錄，再給 **Actions: Read-only**。設定合適到期日。後台登入頁有建立入口。
-3. 在自製後台貼上 token 登入，編輯文章、成員、網站介紹、聯絡資訊、值班表或其他頁面。
-4. 內容支援 Markdown 與原站匯入的 HTML，提供預覽、草稿、日期發布、置頂、標籤、PNG/JPEG/WebP 圖片上傳（2 MB）。圖片先提交，再把圖片路徑寫進文章。
-5. 按「提交到 GitHub」產生 commit。Actions 檢查、建置成功後更新前台，實際狀態以部署紀錄為準。
+1. 開啟後台，由 Cloudflare Zero Trust Access 登入；允許的使用者由 Access policy 管理。
+2. 登入後即可編輯文章、成員、網站介紹、聯絡資訊、值班表或其他頁面，不需要輸入 GitHub token。
+3. 內容支援 Markdown 與 HTML、預覽、草稿、日期發布、置頂、標籤、PNG/JPEG/WebP 圖片上傳（2 MB）。圖片先提交，再把圖片路徑寫進文章。
+4. 按「提交到 GitHub」產生 commit。Actions 檢查、建置成功後更新前台，實際狀態以部署紀錄為準。
 
-Repo 擁有者為 `ncueecesnmg` 組織，後台管理員仍為個人帳號 `fearnot221`。原先以 `fearnot221` 為 Resource owner 建立的 token，請改建為授權 `ncueecesnmg/snmg-213` 的 token；管理員帳號必須擁有該 repo 的寫入權限。
+Worker 使用 `jose` 驗證 Access JWT 的 RS256 簽章、Team domain、Application AUD、有效期限與使用者身分；靜態後台與所有 API 都必須通過驗證。舊的 GitHub token 登入端點與自製 session 已移除，也不再限制為 `fearnot221` 帳號。前台網站仍公開，只有管理後台受 Access 保護。
 
-這個 token 由你自己的 Worker 接收，僅送到 GitHub API。Worker 限制指定管理帳號與固定 repo。token 經 AES-GCM 加密後存入 Secure / HttpOnly / SameSite=Strict cookie，8 小時到期，不放 localStorage，也不寫進 repo。金鑰存於 Cloudflare Secret。每次請求會重新驗證 GitHub 權限。登出清除瀏覽器 cookie；若懷疑憑證遭竊，請在 GitHub 撤銷 token，這會立即阻止後續操作。不要使用本機 gh CLI 的廣泛權限憑證登入。
+GitHub token 存在 Worker Secret `GITHUB_TOKEN`，不傳到瀏覽器、不存入 cookie 或 repo。所有編輯者共用這個伺服器端憑證，GitHub commit 的帳號由該 token 決定。Token 的 Resource owner 選 `ncueecesnmg`，只授權 `snmg-213`，設定 Contents: Read and write、Actions: Read-only。Token 到期或撤銷時由管理員更新 Secret，編輯者不需要重新輸入。
 
-先用限權 token 在正式後台登入，確認讀取與一次內容提交；這步尚未用你的正式 token 測試。本機瀏覽器儲存／衝突流程用模擬 GitHub 驗證，API 測試同樣不會修改正式 repo。
+Access 登入逾時或 GitHub token 出錯時，編輯器保留目前輸入。重新載入前先自行複製尚未儲存的內容；登出按鈕會進入 Cloudflare Access 的登出流程。Access 登出會影響同一使用者的其他 Access 應用程式，詳見 [Cloudflare session management](https://developers.cloudflare.com/cloudflare-one/access-controls/access-settings/session-management/)。
+
+API 測試使用本機簽發的測試 JWT 與模擬 GitHub，不會修改正式 repo。
 
 ## 內容與發布
 
@@ -57,9 +58,19 @@ npm run worker:dev
 npm run worker:deploy
 ```
 
-`SESSION_KEY` 需要 32 bytes 的隨機 base64url 值，以 `wrangler secret put SESSION_KEY` 設定。搬至 `ncueecesnmg` 帳號時已建立新的金鑰；原帳號的登入 session 不會沿用。不要重新產生，除非你要撤銷所有既有 session。本機 `.dev.vars` 已列入 gitignore，裡面只放開發用加密金鑰。不要提交金鑰或 token。設定 Cloudflare Secret 時，值必須是 43 字元的 base64url 字串，不能包含 `.dev.vars` 的包覆引號；讀取 `.dev.vars` 時應使用 dotenv 解析（例如 Node.js `util.parseEnv`），不能用逐行擷取代替。帳號、repo、前台網址與登入限流綁定均在 `wrangler.jsonc`。後台程式更新目前用 Wrangler 手動部署，前台內容 commit 則走 GitHub Actions。 原 Fearnot 帳號的後台網址已改為轉址入口；舊 `/api/` 回傳 410，請在新網址重新登入。
+`wrangler.jsonc` 固定 repo、Cloudflare 帳號、`TEAM_DOMAIN` 與 `POLICY_AUD`。Access application 必須保護整個後台（包含 `/api/*`）；Worker 也會自行驗證 JWT，未設定或驗證失敗一律拒絕。
 
-測試涵蓋內容驗證、發布排序、內容頁與成員舊網址對應、所有內部連結、XSS 清理、登入加密、到期、跨站請求、限流、路徑限制、SHA 衝突與圖片類型。部署前先 build 再 test。
+更新 GitHub 憑證：
+
+```sh
+npx wrangler secret put GITHUB_TOKEN
+```
+
+不要把 token 放進 `vars`、repo 或瀏覽器。正式部署使用 Cloudflare Secret；本機開發可使用已忽略的 `.dev.vars`，但仍需有效的 Access JWT，不提供略過驗證的開關。舊 `SESSION_KEY` 已不再使用。
+
+後台程式更新用 Wrangler 手動部署，前台內容 commit 則走 GitHub Actions。原 Fearnot 帳號的後台網址已改為轉址入口；舊 `/api/` 回傳 410，請在新網址重新登入。
+
+測試涵蓋 Access JWT 簽章、發行者、AUD、有效期限、靜態資源保護、伺服器端 token 不外洩、跨站請求與限流，以及內容驗證、發布排序、內部連結、XSS 清理、SHA 衝突與圖片類型。部署前先 build 再 test。
 
 遷移已完成，匯入工具與 `migration/` 資料夾已移除。網站建置與日常維護直接使用 `src/content/`。
 

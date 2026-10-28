@@ -1,29 +1,63 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {handleRequest,sealSession,openSession} from '../worker/index.mjs';
+import {handleRequest} from '../worker/index.mjs';
+import {generateKeyPair,exportJWK,SignJWT} from 'jose';
 import {validateDocument} from '../src/lib/schema.mjs';
 import {getPosts,getMembers,getSchedule,getLegacyPages,getTaxonomies,taxonomySlug} from '../src/lib/content.mjs';
 import {articleHeadings,renderMarkdown} from '../src/lib/markdown.mjs';
 import {readFileSync,existsSync} from 'node:fs';
-const secret=Buffer.alloc(32,7).toString('base64url'),origin='https://admin.example.com',token='github_pat_test_12345678901234567890';
-const env={SESSION_KEY:secret,ADMIN_LOGIN:'fearnot221',GITHUB_OWNER:'ncueecesnmg',GITHUB_REPO:'snmg-213',GITHUB_BRANCH:'main',FRONTEND_URL:'https://ncueecesnmg.github.io/snmg-213/',LOGIN_LIMITER:{limit:async()=>({success:true})},API_LIMITER:{limit:async()=>({success:true})}};
+const origin='https://admin.example.com',token='github_pat_test_12345678901234567890';
+const env={GITHUB_TOKEN:token,TEAM_DOMAIN:'https://test.cloudflareaccess.com',POLICY_AUD:'test-audience',GITHUB_OWNER:'ncueecesnmg',GITHUB_REPO:'snmg-213',GITHUB_BRANCH:'main',FRONTEND_URL:'https://ncueecesnmg.github.io/snmg-213/',API_LIMITER:{limit:async()=>({success:true})},ASSETS:{fetch:async()=>new Response('protected asset')}};
+const {privateKey,publicKey}=await generateKeyPair('RS256');
+const jwk={...await exportJWK(publicKey),kid:'test-key',alg:'RS256'};
 const post={title:'安全測試',slug:'test',category:'公告',summary:'摘要',body:'## 本文',date:'2026-01-01',published:false,pinned:false};
 const sha='a'.repeat(40);
-function mockGitHub(calls,writeStatus=200){return async(url,options)=>{assert.ok(url.startsWith('https://api.github.com/'));assert.equal(options.headers.Authorization,`Bearer ${token}`);calls.push({url,...options});if(url.endsWith('/user'))return Response.json({login:'fearnot221'});if(url.endsWith('/repos/ncueecesnmg/snmg-213'))return Response.json({permissions:{push:true}});if(options.method==='PUT'||options.method==='DELETE')return Response.json({content:{sha:'b'.repeat(40)},commit:{sha:'c'.repeat(40),html_url:'https://github.com/ncueecesnmg/snmg-213/commit/test'}},{status:writeStatus});return Response.json({sha,content:Buffer.from(JSON.stringify(post)).toString('base64')});};}
-async function request(path,method='GET',body,changes={},cookie){return handleRequest(new Request(origin+path,{method,headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{}),...changes.headers},...(body===undefined?{}:{body:typeof body==='string'?body:JSON.stringify(body)})}),{...env,...changes.env},changes.fetcher||mockGitHub([]));}
-async function session(){const sealed=await sealSession({token,login:'fearnot221',expires:Date.now()+60000},secret,origin);return `__Host-snmg=${sealed}`;}
-test('encrypted sessions expire, resist tampering and bind to the Worker origin',async()=>{const value=await sealSession({token,expires:Date.now()+60000},secret,origin);assert.ok(!value.includes(token));assert.equal((await openSession(value,secret,origin)).token,token);assert.equal(await openSession(value,secret,'https://evil.example'),null);assert.equal(await openSession(value.slice(0,-5)+'aaaaa',secret,origin),null);assert.equal(await openSession(await sealSession({token,expires:1},secret,origin),secret,origin),null);});
-test('login checks identity, creates a secure HttpOnly cookie and never returns the token',async()=>{const result=await request('/api/login','POST',{token});assert.equal(result.status,200);assert.match(result.headers.get('set-cookie'),/__Host-snmg=.*HttpOnly; SameSite=Strict; Max-Age=28800; Secure/);assert.ok(!(await result.text()).includes(token));const denied=await request('/api/login','POST',{token},{fetcher:async()=>Response.json({login:'other',permissions:{push:true}})});assert.equal(denied.status,403);assert.equal((await request('/api/login','POST',{token},{env:{SESSION_KEY:undefined}})).status,503);});
-test('malformed deployment keys produce a configuration error without exposing the key',async()=>{
-  for(const value of [`"${secret}"`, `'${secret}'`, 'invalid-key', 'a'.repeat(44), 123]){
-    const response=await request('/api/login','POST',{token},{env:{SESSION_KEY:value}});
-    assert.equal(response.status,503);
-    const data=await response.json();assert.match(data.error,/登入金鑰設定無效/);assert.ok(!data.error.includes(secret));
+function mockGitHub(calls,writeStatus=200){return async(url,options)=>{
+  if(url===env.TEAM_DOMAIN+'/cdn-cgi/access/certs')return Response.json({keys:[jwk]});
+  assert.ok(url.startsWith('https://api.github.com/repos/ncueecesnmg/snmg-213'));
+  assert.equal(options.headers.Authorization,`Bearer ${token}`);calls.push({url,...options});
+  if(options.method==='PUT'||options.method==='DELETE')return Response.json({content:{sha:'b'.repeat(40)},commit:{sha:'c'.repeat(40),html_url:'https://github.com/ncueecesnmg/snmg-213/commit/test'}},{status:writeStatus});
+  return Response.json({sha,content:Buffer.from(JSON.stringify(post)).toString('base64')});
+};}
+async function request(path,method='GET',body,changes={},assertion){return handleRequest(new Request(origin+path,{method,headers:{origin,'content-type':'application/json',...(assertion?{'cf-access-jwt-assertion':assertion}:{}),...changes.headers},...(body===undefined?{}:{body:typeof body==='string'?body:JSON.stringify(body)})}),{...env,...changes.env},changes.fetcher||mockGitHub([]));}
+async function accessToken(changes={},signingKey=privateKey){return new SignJWT({iss:env.TEAM_DOMAIN,aud:[env.POLICY_AUD],sub:'access-user',email:'editor@example.com',type:'app',exp:Math.floor(Date.now()/1000)+600,...changes}).setProtectedHeader({alg:'RS256',kid:'test-key'}).sign(signingKey);}
+test('Access requires a signed, unexpired user JWT for this issuer and application, including static assets',async()=>{
+  const calls=[];
+  for(const path of ['/','/app.js','/api/session','/api/content?collection=posts']){
+    assert.equal((await request(path,'GET',undefined,{fetcher:mockGitHub(calls)})).status,401);
+    assert.equal((await request(path,'GET',undefined,{headers:{'cf-access-authenticated-user-email':'editor@example.com',cookie:'__Host-snmg=old-session'}})).status,401);
   }
+  for(const changes of [{iss:'https://other.cloudflareaccess.com'},{aud:['another-app']},{exp:1},{exp:undefined},{nbf:Math.floor(Date.now()/1000)+600},{email:undefined},{type:'service'}]){
+    assert.equal((await request('/api/session','GET',undefined,{},await accessToken(changes))).status,401);
+  }
+  const other=await generateKeyPair('RS256');
+  assert.equal((await request('/api/session','GET',undefined,{},await accessToken({},other.privateKey))).status,401);
+  assert.equal((await request('/api/session','GET',undefined,{},'forged.jwt.value')).status,401);
+  assert.equal(calls.length,0);
 });
-test('unauthorized, cross-origin and rate limited operations fail before writes',async()=>{assert.equal((await request('/api/session')).status,401);assert.equal((await request('/api/login','POST','null')).status,400);assert.equal((await request('/api/login','POST','{broken')).status,400);assert.equal((await request('/api/login','POST',{token},{headers:{origin:'https://evil.example'}})).status,403);assert.equal((await request('/api/login','POST',{token},{env:{LOGIN_LIMITER:{limit:async()=>({success:false})}}})).status,429);});
-test('write validates schema and paths, sends the expected SHA, and preserves conflict response',async()=>{const cookie=await session(),calls=[];for(const collection of ['__proto__','constructor','unknown'])assert.equal((await request(`/api/content?collection=${collection}&file=test.json`,'PUT',{data:post},{},cookie)).status,400);assert.equal((await request('/api/content?collection=posts&file=../test.json','PUT',{data:post},{},cookie)).status,400);assert.equal((await request('/api/content?collection=posts&file=test.json','PUT',{data:{...post,title:''}},{},cookie)).status,400);const response=await request('/api/content?collection=posts&file=test.json','PUT',{data:post,sha},{fetcher:mockGitHub(calls)},cookie);assert.equal(response.status,200);const write=calls.find(call=>call.method==='PUT'),body=JSON.parse(write.body);assert.equal(body.sha,sha);assert.deepEqual(JSON.parse(Buffer.from(body.content,'base64')),post);assert.equal((await request('/api/content?collection=posts&file=test.json','PUT',{data:post,sha},{fetcher:mockGitHub([],409)},cookie)).status,409);});
-test('preview sanitizes HTML, resolves frontend assets, upload rejects active content, settings cannot be deleted',async()=>{const cookie=await session();const response=await request('/api/preview','POST',{body:'<img src="/images/a.png" onerror="alert(1)"><script>alert(1)</script>'},{},cookie);const {html}=await response.json();assert.doesNotMatch(html,/<script|onerror/);assert.match(html,/https:\/\/ncueecesnmg.github.io\/snmg-213\/images\/a.png/);assert.equal((await request('/api/uploads','POST',{content:Buffer.from('<svg onload="alert(1)">').toString('base64')},{},cookie)).status,400);assert.equal((await request('/api/content?collection=site&file=settings.json','DELETE',{confirm:true,sha},{},cookie)).status,403);assert.equal((await request('/api/content?collection=posts&file=test.json','DELETE',{sha},{},cookie)).status,400);const logout=await request('/api/logout','POST',{}, {},cookie);assert.equal(logout.status,200);assert.match(logout.headers.get('set-cookie'),/Max-Age=0/);});
+test('Access identity reaches the UI while the configured GitHub token stays on the server',async()=>{
+  const assertion=await accessToken();
+  const result=await request('/api/session','GET',undefined,{},assertion);
+  assert.equal(result.status,200);assert.equal((await result.clone().json()).login,'editor@example.com');
+  assert.ok(!(await result.text()).includes(token));assert.equal(result.headers.get('set-cookie'),null);
+  const asset=await request('/app.js','GET',undefined,{},assertion);
+  assert.equal(asset.status,200);assert.equal(asset.headers.get('cache-control'),'no-store');
+  assert.equal((await request('/api/login','POST',{token:'browser_supplied_token'}, {},assertion)).status,404);
+});
+test('missing Access settings or server GitHub token fail closed, and revoked token errors do not expose secrets',async()=>{
+  const assertion=await accessToken();
+  for(const changes of [{TEAM_DOMAIN:''},{TEAM_DOMAIN:'https://untrusted.example'},{POLICY_AUD:''},{GITHUB_TOKEN:undefined},{GITHUB_TOKEN:'invalid token'}])assert.equal((await request('/api/session','GET',undefined,{env:changes},assertion)).status,503);
+  const expired=await request('/api/content?collection=posts','GET',undefined,{fetcher:async()=>Response.json({}, {status:401})},assertion);
+  assert.equal(expired.status,503);assert.ok(!(await expired.text()).includes(token));
+});
+test('cross-origin and rate limited operations fail before GitHub writes',async()=>{
+  const assertion=await accessToken(),calls=[];
+  assert.equal((await request('/api/content?collection=posts&file=test.json','PUT',{data:post},{headers:{origin:'https://evil.example'},fetcher:mockGitHub(calls)},assertion)).status,403);
+  assert.equal((await request('/api/content?collection=posts&file=test.json','PUT',{data:post},{env:{API_LIMITER:{limit:async()=>({success:false})}},fetcher:mockGitHub(calls)},assertion)).status,429);
+  assert.equal(calls.length,0);
+});
+test('write validates schema and paths, sends the expected SHA, and preserves conflict response',async()=>{const assertion=await accessToken(),calls=[];for(const collection of ['__proto__','constructor','unknown'])assert.equal((await request(`/api/content?collection=${collection}&file=test.json`,'PUT',{data:post},{},assertion)).status,400);assert.equal((await request('/api/content?collection=posts&file=../test.json','PUT',{data:post},{},assertion)).status,400);assert.equal((await request('/api/content?collection=posts&file=test.json','PUT',{data:{...post,title:''}},{},assertion)).status,400);const response=await request('/api/content?collection=posts&file=test.json','PUT',{data:post,sha},{fetcher:mockGitHub(calls)},assertion);assert.equal(response.status,200);const write=calls.find(call=>call.method==='PUT'),body=JSON.parse(write.body);assert.equal(body.sha,sha);assert.deepEqual(JSON.parse(Buffer.from(body.content,'base64')),post);assert.equal((await request('/api/content?collection=posts&file=test.json','PUT',{data:post,sha},{fetcher:mockGitHub([],409)},assertion)).status,409);});
+test('preview sanitizes HTML, resolves frontend assets, upload rejects active content, settings cannot be deleted',async()=>{const assertion=await accessToken();const response=await request('/api/preview','POST',{body:'<img src="/images/a.png" onerror="alert(1)"><script>alert(1)</script>'},{},assertion);const {html}=await response.json();assert.doesNotMatch(html,/<script|onerror/);assert.match(html,/https:\/\/ncueecesnmg.github.io\/snmg-213\/images\/a.png/);assert.equal((await request('/api/uploads','POST',{content:Buffer.from('<svg onload="alert(1)">').toString('base64')},{},assertion)).status,400);assert.equal((await request('/api/content?collection=site&file=settings.json','DELETE',{confirm:true,sha},{},assertion)).status,403);assert.equal((await request('/api/content?collection=posts&file=test.json','DELETE',{sha},{},assertion)).status,400);assert.equal((await request('/api/preview','POST','{broken',{},assertion)).status,400);});
 test('content validates and current documents, member aliases and taxonomy routes exist in the static build',()=>{
   const posts=getPosts(),members=getMembers(),pages=getLegacyPages();
   for(const item of posts)validateDocument('posts',item,item.file);

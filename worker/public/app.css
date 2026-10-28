@@ -37,18 +37,10 @@ p { text-wrap:pretty }
 .login-brand p { color:#b7b7b0; font-size:16px; line-height:2; margin-top:26px }
 .login-brand>strong { align-self:stretch; padding-top:24px; border-top:1px solid #30302c; font:400 13px/1.8 var(--mono); color:#a3a39d }
 .login-main { display:flex; align-items:center; justify-content:center; padding:clamp(32px,5vw,80px) }
-.login-main>form { width:100%; max-width:420px }
+.login-main>div { width:100%; max-width:420px }
 .login-main h2 { font-size:34px }
-.login-main form>p { margin:18px 0 34px; color:var(--muted) }
-.login-main label { display:block; font-size:14px; font-weight:600; margin-bottom:10px }
-.login-main input { display:block; width:100%; padding:14px; border:1px solid #8a8a82; background:var(--surface); margin-bottom:20px; font:14px/1.6 var(--mono) }
-.login-main .primary { width:100% }
-.login-help { margin-top:32px; padding-top:18px; border-top:1px solid var(--line); font-size:14px; line-height:1.9; color:var(--muted) }
-.login-help summary { min-height:44px; padding:8px 0; color:var(--ink); font-weight:500 }
-.login-help ol { padding-left:22px }
-.login-help li+li { margin-top:12px }
-.login-help a { color:var(--ink); text-decoration:underline }
-.login-help p { margin-top:20px }
+.login-main>div>p { margin:18px 0 34px; color:var(--muted) }
+.login-main .primary { display:block; text-align:center; width:100% }
 .message { padding:16px 20px; margin-block:22px; background:var(--soft); border-left:3px solid var(--ink); font-size:14px; overflow-wrap:anywhere }
 .message.error { background:#f3eaea; color:#842121; border-color:#9c2828 }
 .message a { text-decoration:underline }
@@ -154,7 +146,6 @@ dialog>header { display:flex; justify-content:space-between; align-items:center;
   .login-brand p,.login-brand>strong { display:none }
   .login-main { padding:36px 24px 48px }
   .login-main h2 { font-size:28px }
-  .login-main input { font-size:16px }
   .sidebar { padding:24px 20px 14px; gap:20px }
   .sidebar nav { width:100%; margin:0; order:2; display:grid; grid-template-columns:1fr 1fr; gap:4px }
   .sidebar nav button { font-size:14px; padding:12px; min-height:46px }

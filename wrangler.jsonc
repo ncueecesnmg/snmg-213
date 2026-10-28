@@ -3,18 +3,33 @@
   "main": "worker/index.mjs",
   "account_id": "7a6a470dc8fc9cbc059a79013d0c9892",
   "compatibility_date": "2026-10-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": { "directory": "worker/public", "binding": "ASSETS", "run_worker_first": true },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "worker/public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
   "vars": {
     "GITHUB_OWNER": "ncueecesnmg",
     "GITHUB_REPO": "snmg-213",
     "GITHUB_BRANCH": "main",
-    "ADMIN_LOGIN": "fearnot221",
-    "FRONTEND_URL": "https://ncueecesnmg.github.io/snmg-213/"
+    "FRONTEND_URL": "https://ncueecesnmg.github.io/snmg-213/",
+    "TEAM_DOMAIN": "https://ncueecesnmg.cloudflareaccess.com",
+    "POLICY_AUD": "6122289bfe5afde854fe7a108c6fa06f4b1fcb4a2485380ee940fadce662b9f2"
   },
   "ratelimits": [
-    {"name":"LOGIN_LIMITER","namespace_id":"21301","simple":{"limit":5,"period":60}},
-    {"name":"API_LIMITER","namespace_id":"21302","simple":{"limit":60,"period":60}}
+    {
+      "name": "API_LIMITER",
+      "namespace_id": "21302",
+      "simple": {
+        "limit": 60,
+        "period": 60
+      }
+    }
   ],
-  "observability": { "enabled": false }
+  "observability": {
+    "enabled": false
+  }
 }
