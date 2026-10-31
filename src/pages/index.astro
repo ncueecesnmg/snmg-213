@@ -65,6 +65,14 @@ const links = [
         <h2 id="duty-title">今日值班</h2>
         {duty.map((slots, i) => <div data-today={i + 1} hidden>{slots.length ? <ul class="duty-list">{slots.map((slot: { time: string; members: any[] }) => <li><span>{slot.time}</span><div>{slot.members.map((person: any) => <a href={withBase(person.href)}>{person.name}</a>)}</div></li>)}</ul> : <p>今日未排班，請來信聯絡。</p>}</div>)}
         <div data-today="0" hidden><p>週末無人值班，如有要事請來信至機房信箱。</p></div>
+        <script is:inline>
+          // Show today's slots before the next section paints, without waiting for module loading.
+          {
+            const weekday = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Taipei', weekday: 'short' });
+            const day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(weekday) + 1;
+            document.querySelector(`[data-today="${day}"]`).hidden = false;
+          }
+        </script>
         <p style="margin-top:10px"><a class="text-link" href={withBase('/sched/')}>完整值班表</a></p>
       </section>
       <section class="side-card" aria-labelledby="links-title">

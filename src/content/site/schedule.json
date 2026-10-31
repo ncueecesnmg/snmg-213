@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-18",
+  "updated": "2026-10-28",
   "rows": [
     [
       {
@@ -45,15 +45,11 @@
         "members": []
       },
       {
-        "text": "潘兆新 梁耕嘉",
+        "text": "賀晟瑀",
         "members": [
           {
-            "name": "潘兆新",
-            "href": "/members/111-chris/"
-          },
-          {
-            "name": "梁耕嘉",
-            "href": "/members/112-jason/"
+            "name": "賀晟瑀",
+            "href": "/members/113-justin/"
           }
         ]
       },
@@ -68,45 +64,37 @@
         "members": []
       },
       {
+        "text": "陳思惟",
+        "members": [
+          {
+            "name": "陳思惟",
+            "href": "/members/111-swchen/"
+          }
+        ]
+      },
+      {
+        "text": "林珮萱 詹子槿",
+        "members": [
+          {
+            "name": "林珮萱",
+            "href": "/members/114-hsuan/"
+          },
+          {
+            "name": "詹子槿",
+            "href": "/members/114-yuun/"
+          }
+        ]
+      },
+      {
         "text": "",
         "members": []
       },
       {
-        "text": "賀晟瑀 梁耕嘉",
+        "text": "賀晟瑀",
         "members": [
           {
             "name": "賀晟瑀",
             "href": "/members/113-justin/"
-          },
-          {
-            "name": "梁耕嘉",
-            "href": "/members/112-jason/"
-          }
-        ]
-      },
-      {
-        "text": "梁耕嘉 陳衍融",
-        "members": [
-          {
-            "name": "梁耕嘉",
-            "href": "/members/112-jason/"
-          },
-          {
-            "name": "陳衍融",
-            "href": "/members/112-conashin/"
-          }
-        ]
-      },
-      {
-        "text": "賀晟瑀 潘兆新",
-        "members": [
-          {
-            "name": "賀晟瑀",
-            "href": "/members/113-justin/"
-          },
-          {
-            "name": "潘兆新",
-            "href": "/members/111-chris/"
           }
         ]
       },
@@ -121,45 +109,41 @@
         "members": []
       },
       {
+        "text": "陳思惟",
+        "members": [
+          {
+            "name": "陳思惟",
+            "href": "/members/111-swchen/"
+          }
+        ]
+      },
+      {
+        "text": "林珮萱 詹子槿",
+        "members": [
+          {
+            "name": "林珮萱",
+            "href": "/members/114-hsuan/"
+          },
+          {
+            "name": "詹子槿",
+            "href": "/members/114-yuun/"
+          }
+        ]
+      },
+      {
         "text": "",
         "members": []
       },
       {
-        "text": "賀晟瑀 梁耕嘉",
-        "members": [
-          {
-            "name": "賀晟瑀",
-            "href": "/members/113-justin/"
-          },
-          {
-            "name": "梁耕嘉",
-            "href": "/members/112-jason/"
-          }
-        ]
-      },
-      {
-        "text": "梁耕嘉 陳衍融",
+        "text": "梁耕嘉 賀晟瑀",
         "members": [
           {
             "name": "梁耕嘉",
             "href": "/members/112-jason/"
           },
           {
-            "name": "陳衍融",
-            "href": "/members/112-conashin/"
-          }
-        ]
-      },
-      {
-        "text": "賀晟瑀 潘兆新",
-        "members": [
-          {
             "name": "賀晟瑀",
             "href": "/members/113-justin/"
-          },
-          {
-            "name": "潘兆新",
-            "href": "/members/111-chris/"
           }
         ]
       },
@@ -174,20 +158,15 @@
         "members": []
       },
       {
-        "text": "陳衍融",
+        "text": "陳衍融 陳思惟",
         "members": [
           {
             "name": "陳衍融",
             "href": "/members/112-conashin/"
-          }
-        ]
-      },
-      {
-        "text": "陳衍融",
-        "members": [
+          },
           {
-            "name": "陳衍融",
-            "href": "/members/112-conashin/"
+            "name": "陳思惟",
+            "href": "/members/111-swchen/"
           }
         ]
       },
@@ -205,20 +184,37 @@
         ]
       },
       {
-        "text": "陳思惟",
+        "text": "黃勝安",
         "members": [
           {
-            "name": "陳思惟",
-            "href": "/members/111-swchen/"
+            "name": "黃勝安",
+            "href": "/members/114-an/"
           }
         ]
       },
       {
-        "text": "陳思惟",
+        "text": "黃勝安 梁耕嘉",
         "members": [
           {
-            "name": "陳思惟",
-            "href": "/members/111-swchen/"
+            "name": "黃勝安",
+            "href": "/members/114-an/"
+          },
+          {
+            "name": "梁耕嘉",
+            "href": "/members/112-jason/"
+          }
+        ]
+      },
+      {
+        "text": "林郁翔 盧明澤",
+        "members": [
+          {
+            "name": "林郁翔",
+            "href": "/members/114-spig/"
+          },
+          {
+            "name": "盧明澤",
+            "href": "/members/115-fearnot/"
           }
         ]
       }
@@ -229,35 +225,38 @@
         "members": []
       },
       {
-        "text": "陳思惟",
+        "text": "陳思惟 陳衍融",
         "members": [
           {
             "name": "陳思惟",
             "href": "/members/111-swchen/"
-          }
-        ]
-      },
-      {
-        "text": "賀晟瑀",
-        "members": [
-          {
-            "name": "賀晟瑀",
-            "href": "/members/113-justin/"
-          }
-        ]
-      },
-      {
-        "text": "陳衍融 賴詠文",
-        "members": [
+          },
           {
             "name": "陳衍融",
             "href": "/members/112-conashin/"
-          },
-          {
-            "name": "賴詠文",
-            "href": "/members/111-frostbean/"
           }
         ]
+      },
+      {
+        "text": "盧明澤 陳衍融",
+        "members": [
+          {
+            "name": "盧明澤",
+            "href": "/members/115-fearnot/"
+          },
+          {
+            "name": "陳衍融",
+            "href": "/members/112-conashin/"
+          }
+        ]
+      },
+      {
+        "text": "",
+        "members": []
+      },
+      {
+        "text": "",
+        "members": []
       },
       {
         "text": "林郁翔",
@@ -265,15 +264,6 @@
           {
             "name": "林郁翔",
             "href": "/members/114-spig/"
-          }
-        ]
-      },
-      {
-        "text": "陳思惟",
-        "members": [
-          {
-            "name": "陳思惟",
-            "href": "/members/111-swchen/"
           }
         ]
       }
@@ -284,35 +274,47 @@
         "members": []
       },
       {
-        "text": "賴詠文",
+        "text": "林珮萱 陳思惟",
         "members": [
           {
-            "name": "賴詠文",
-            "href": "/members/111-frostbean/"
-          }
-        ]
-      },
-      {
-        "text": "賀晟瑀",
-        "members": [
-          {
-            "name": "賀晟瑀",
-            "href": "/members/113-justin/"
-          }
-        ]
-      },
-      {
-        "text": "賴詠文 潘兆新",
-        "members": [
-          {
-            "name": "賴詠文",
-            "href": "/members/111-frostbean/"
+            "name": "林珮萱",
+            "href": "/members/114-hsuan/"
           },
           {
-            "name": "潘兆新",
-            "href": "/members/111-chris/"
+            "name": "陳思惟",
+            "href": "/members/111-swchen/"
           }
         ]
+      },
+      {
+        "text": "盧明澤 陳衍融",
+        "members": [
+          {
+            "name": "盧明澤",
+            "href": "/members/115-fearnot/"
+          },
+          {
+            "name": "陳衍融",
+            "href": "/members/112-conashin/"
+          }
+        ]
+      },
+      {
+        "text": "詹子槿 黃勝安",
+        "members": [
+          {
+            "name": "詹子槿",
+            "href": "/members/114-yuun/"
+          },
+          {
+            "name": "黃勝安",
+            "href": "/members/114-an/"
+          }
+        ]
+      },
+      {
+        "text": "",
+        "members": []
       },
       {
         "text": "林郁翔",
@@ -320,15 +322,6 @@
           {
             "name": "林郁翔",
             "href": "/members/114-spig/"
-          }
-        ]
-      },
-      {
-        "text": "陳思惟",
-        "members": [
-          {
-            "name": "陳思惟",
-            "href": "/members/111-swchen/"
           }
         ]
       }
@@ -339,42 +332,42 @@
         "members": []
       },
       {
-        "text": "賴詠文",
+        "text": "林珮萱 詹子槿",
         "members": [
           {
-            "name": "賴詠文",
-            "href": "/members/111-frostbean/"
-          }
-        ]
-      },
-      {
-        "text": "陳思惟",
-        "members": [
-          {
-            "name": "陳思惟",
-            "href": "/members/111-swchen/"
-          }
-        ]
-      },
-      {
-        "text": "賴詠文 潘兆新",
-        "members": [
-          {
-            "name": "賴詠文",
-            "href": "/members/111-frostbean/"
+            "name": "林珮萱",
+            "href": "/members/114-hsuan/"
           },
           {
-            "name": "潘兆新",
-            "href": "/members/111-chris/"
+            "name": "詹子槿",
+            "href": "/members/114-yuun/"
           }
         ]
       },
       {
-        "text": "林郁翔",
+        "text": "盧明澤",
         "members": [
           {
-            "name": "林郁翔",
-            "href": "/members/114-spig/"
+            "name": "盧明澤",
+            "href": "/members/115-fearnot/"
+          }
+        ]
+      },
+      {
+        "text": "黃勝安",
+        "members": [
+          {
+            "name": "黃勝安",
+            "href": "/members/114-an/"
+          }
+        ]
+      },
+      {
+        "text": "賀晟瑀",
+        "members": [
+          {
+            "name": "賀晟瑀",
+            "href": "/members/113-justin/"
           }
         ]
       },
@@ -394,33 +387,50 @@
         "members": []
       },
       {
-        "text": "賴詠文",
+        "text": "林珮萱 詹子槿",
         "members": [
           {
-            "name": "賴詠文",
-            "href": "/members/111-frostbean/"
+            "name": "林珮萱",
+            "href": "/members/114-hsuan/"
+          },
+          {
+            "name": "詹子槿",
+            "href": "/members/114-yuun/"
           }
         ]
       },
       {
-        "text": "",
-        "members": []
-      },
-      {
-        "text": "潘兆新",
+        "text": "盧明澤 梁耕嘉",
         "members": [
           {
-            "name": "潘兆新",
-            "href": "/members/111-chris/"
+            "name": "盧明澤",
+            "href": "/members/115-fearnot/"
+          },
+          {
+            "name": "梁耕嘉",
+            "href": "/members/112-jason/"
           }
         ]
       },
       {
-        "text": "林郁翔",
+        "text": "黃勝安",
         "members": [
           {
-            "name": "林郁翔",
-            "href": "/members/114-spig/"
+            "name": "黃勝安",
+            "href": "/members/114-an/"
+          }
+        ]
+      },
+      {
+        "text": "梁耕嘉 賀晟瑀",
+        "members": [
+          {
+            "name": "梁耕嘉",
+            "href": "/members/112-jason/"
+          },
+          {
+            "name": "賀晟瑀",
+            "href": "/members/113-justin/"
           }
         ]
       },
